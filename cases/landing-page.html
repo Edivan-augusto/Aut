@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Arte da Culinária Rápida e Saudável - Seu Ebook de Receitas</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Reset e Configurações Globais */
+        :root {
+            --primary-color: #E67E22; /* Laranja vibrante para CTAs */
+            --secondary-color: #2c3e50; /* Cinza escuro para texto */
+            --background-color: #fdfaf6; /* Um branco-creme suave */
+            --card-background: #FFFFFF;
+            --text-color: #34495e;
+            --font-primary: 'Poppins', sans-serif;
+            --font-secondary: 'Lora', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Animação de Fade-in para seções */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Cabeçalho */
+        header {
+            background: var(--background-color);
+            padding: 20px 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            transition: box-shadow 0.3s ease;
+        }
+
+        header.scrolled {
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            font-family: var(--font-secondary);
+        }
+
+        .cta-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #d35400;
+            transform: translateY(-2px);
+        }
+
+        /* Seção Herói (Principal) */
+        .hero {
+            padding-top: 150px;
+            padding-bottom: 80px;
+            text-align: center;
+        }
+
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 40px;
+        }
+
+        .hero-text {
+            flex: 1;
+            text-align: left;
+        }
+
+        .hero h1 {
+            font-family: var(--font-secondary);
+            font-size: 3.5rem;
+            line-height: 1.2;
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span {
+            color: var(--primary-color);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+        }
+
+        .hero-image {
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transform: rotate(3deg);
+        }
+
+        /* Seções Genéricas */
+        section {
+            padding: 80px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-family: var(--font-secondary);
+            color: var(--secondary-color);
+            margin-bottom: 50px;
+        }
+
+        /* Seção de Benefícios */
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .benefit-card {
+            background: var(--card-background);
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .benefit-card .icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .benefit-card h3 {
+            font-size: 1.4rem;
+            color: var(--secondary-color);
+            margin-bottom: 10px;
+        }
+        
+        /* Seção 'O que você vai encontrar' */
+        #about {
+            background-color: #fff;
+        }
+
+        .about-content {
+            display: flex;
+            align-items: center;
+            gap: 50px;
+        }
+
+        .about-image img {
+            max-width: 400px;
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .about-text ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .about-text ul li {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .about-text ul li::before {
+            content: '✓';
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+
+        /* Seção de Depoimentos */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .testimonial-card {
+            background: var(--card-background);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .testimonial-card p {
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        /* Seção de CTA Final e Preço */
+        #final-cta {
+            background-color: var(--secondary-color);
+            color: white;
+            text-align: center;
+            border-radius: 20px;
+            margin: 0 20px;
+        }
+        
+        #final-cta .container {
+             padding: 60px 20px;
+        }
+
+        #final-cta h2 {
+            font-family: var(--font-secondary);
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+        }
+        
+        .price {
+            margin: 30px 0;
+        }
+        
+        .old-price {
+            text-decoration: line-through;
+            font-size: 1.5rem;
+            opacity: 0.7;
+        }
+        
+        .new-price {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .guarantee {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            opacity: 0.9;
+        }
+        
+        .guarantee .icon {
+            font-size: 2rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            margin-top: 50px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+            }
+            .hero-text {
+                text-align: center;
+                margin-bottom: 40px;
+            }
+            .about-content {
+                flex-direction: column;
+            }
+            .about-image {
+                margin-bottom: 30px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+            .section-title, #final-cta h2 {
+                font-size: 2rem;
+            }
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header id="main-header">
+        <div class="container">
+            <nav>
+                <div class="logo">Sabor & Arte</div>
+                <a href="#final-cta" class="cta-button">Quero meu Ebook Agora!</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+
+        <section class="hero">
+            <div class="container">
+                <div class="hero-content">
+                    <div class="hero-text fade-in">
+                        <h1>Descubra <span>A Arte</span> da Culinária Rápida e Saudável</h1>
+                        <p>Cansado de comer sempre as mesmas coisas? Transforme sua rotina na cozinha com 50 receitas deliciosas, práticas e que cabem no seu dia a dia.</p>
+                        <a href="#final-cta" class="cta-button" style="padding: 15px 35px; font-size: 1.2rem;">Comprar por R$ 49,90</a>
+                    </div>
+                    <div class="hero-image fade-in">
+                        <img src="https://placehold.co/800x1200/E67E22/white?text=A+Arte+da\nCulinária\nRápida+e\nSaudável&font=lora" alt="Capa do Ebook A Arte da Culinária Rápida e Saudável">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="benefits">
+            <div class="container">
+                <h2 class="section-title fade-in">Transforme sua Alimentação e sua Vida</h2>
+                <div class="benefits-grid">
+                    <div class="benefit-card fade-in">
+                        <div class="icon">🕒</div>
+                        <h3>Economize Tempo</h3>
+                        <p>Receitas prontas em até 30 minutos. Perfeitas para a correria da semana, sem abrir mão do sabor.</p>
+                    </div>
+                    <div class="benefit-card fade-in">
+                        <div class="icon">🥗</div>
+                        <h3>Coma Melhor</h3>
+                        <p>Ingredientes nutritivos e balanceados para te dar mais energia e bem-estar todos os dias.</p>
+                    </div>
+                    <div class="benefit-card fade-in">
+                        <div class="icon">💡</div>
+                        <h3>Desperte a Criatividade</h3>
+                        <p>Aprenda a combinar sabores e a criar pratos incríveis com ingredientes que você já tem em casa.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="about">
+            <div class="container">
+                <h2 class="section-title fade-in">O que você vai encontrar neste Ebook?</h2>
+                <div class="about-content">
+                    <div class="about-image fade-in">
+                        <img src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Prato de comida saudável">
+                    </div>
+                    <div class="about-text fade-in">
+                        <ul>
+                            <li><strong>50 Receitas Exclusivas:</strong> Separadas entre café da manhã, almoço, jantar, lanches e sobremesas.</li>
+                            <li><strong>Lista de Compras Inteligente:</strong> Para otimizar suas idas ao supermercado e evitar desperdícios.</li>
+                            <li><strong>Dicas de Ouro da Chef:</strong> Segredos para temperar, armazenar e preparar seus alimentos como um profissional.</li>
+                            <li><strong>Guia de Substituições:</strong> Opções para adaptar as receitas para dietas vegetarianas, veganas ou sem glúten.</li>
+                             <li><strong>Bônus Especial:</strong> Um capítulo completo sobre como montar marmitas saudáveis e saborosas para a semana toda.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials">
+            <div class="container">
+                <h2 class="section-title fade-in">Quem já comprou, amou!</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card fade-in">
+                        <p>"Finalmente um livro de receitas que entende a minha rotina! Os pratos são fáceis, rápidos e deliciosos. Minha família toda aprovou. Recomendo demais!"</p>
+                        <div class="testimonial-author">- Ana B., Advogada</div>
+                    </div>
+                    <div class="testimonial-card fade-in">
+                        <p>"Eu não tinha nenhuma intimidade com a cozinha, mas com esse ebook tudo mudou. As instruções são muito claras e as fotos dão água na boca. Já fiz mais de 10 receitas!"</p>
+                        <div class="testimonial-author">- Carlos M., Estudante</div>
+                    </div>
+                    <div class="testimonial-card fade-in">
+                        <p>"O melhor investimento que fiz para a minha saúde. As dicas de organização e a lista de compras me ajudaram a economizar tempo e dinheiro. Valeu cada centavo."</p>
+                        <div class="testimonial-author">- Fernanda L., Personal Trainer</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="final-cta">
+            <div class="container fade-in">
+                <h2>Chega de Desculpas! Comece a Cozinhar de Verdade Hoje.</h2>
+                <p>Acesso imediato e vitalício a um material que vai revolucionar sua relação com a comida.</p>
+                <div class="price">
+                    <span class="old-price">De R$ 99,90</span>
+                    <div class="new-price">Por apenas R$ 49,90</div>
+                </div>
+                <a href="#" class="cta-button" style="padding: 20px 50px; font-size: 1.5rem;" onclick="handleBuyClick()">EU QUERO MEU EBOOK AGORA!</a>
+                <div class="guarantee">
+                    <div class="icon">🛡️</div>
+                    <span>Compra 100% segura com 7 dias de garantia incondicional.</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Sabor & Arte. Todos os direitos reservados.</p>
+            <p>Criado por Chef Juliana Rossi.</p>
+        </div>
+    </footer>
+
+<script>
+    // Todo o JavaScript está aqui dentro.
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        // --- Animação de Fade-in ao rolar a página ---
+        const fadeInElements = document.querySelectorAll('.fade-in');
+
+        const observerOptions = {
+            root: null, // relativo ao viewport
+            rootMargin: '0px',
+            threshold: 0.1 // 10% do elemento visível
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Para a animação não repetir
+                }
+            });
+        }, observerOptions);
+
+        fadeInElements.forEach(el => {
+            observer.observe(el);
+        });
+
+        // --- Adicionar sombra ao cabeçalho ao rolar ---
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+    });
+
+    // --- Função para o clique no botão de compra ---
+    function handleBuyClick() {
+        // Em um projeto real, aqui você integraria com uma plataforma de pagamento (Stripe, Hotmart, etc.)
+        alert('Você será redirecionado para a página de pagamento! (Isto é apenas um exemplo)');
+    }
+
+</script>
+
+</body>
+</html>

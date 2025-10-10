@@ -93,7 +93,8 @@
     .grid-produtos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 320px)); gap: 22px; align-items: stretch; justify-content: center; }
     .card { background: var(--cor-secundaria); border: 1px solid #1c385f; border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow-1); transition: transform .2s ease, box-shadow .2s ease; height: 100%; display: grid; grid-template-rows: auto 1fr auto; }
     .card:hover { transform: translateY(-6px); box-shadow: var(--shadow-2); }
-    .card h3 { margin-bottom: 10px; }
+    .card h3 { margin-bottom: 10px; display: inline-flex; align-items: center; gap: 8px; }
+    .h3-icon { font-size: 1.05em; line-height: 1; }
     .card p { color: var(--cor-texto-secundario); margin-bottom: 14px; }
     .features { list-style: none; color: #a9b7d6; margin-bottom: 16px; }
     .features li { margin: 6px 0; }
@@ -106,6 +107,7 @@
     /* Portfólio / Casos */
     .case { background: linear-gradient(180deg, rgba(17,34,64,.9), rgba(17,34,64,.7)); border: 1px solid #1c385f; border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-1); }
     .case small { color: #a2b2d3; display: block; margin-bottom: 10px; }
+    .case .btn { margin-top: 10px; }
 
     /* Sobre */
     #sobre .container { display: grid; grid-template-columns: 260px 1fr; gap: 36px; align-items: center; }
@@ -536,6 +538,114 @@
       document.getElementById(tabName).classList.add('active');
       event.currentTarget.classList.add('active');
     }
+
+    // Ícones nos títulos dos cards (após o nome)
+    (function addCardIcons() {
+      const normalize = (s) =>
+        (s || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+
+      const icons = new Map([
+        ['criacao de software', '💻'],
+        ['manutencao de software', '🔧'],
+        ['bot cassinos', '🎰'],
+        ['web scraping', '🔎'],
+        ['bot games', '🎮'],
+        ['script de automacao', '⚙️'],
+        ['criacao de api', '🔗'],
+        ['manutencao em automacao existente', '🛠️'],
+        ['planilha inteligente (macros)', '📊'],
+        ['planilha independente', '📈'],
+        ['site/aplicativo web', '🌐'],
+        ['landing page', '🚀'],
+        ['power bi', '📊'],
+        ['especifique o problema e nos resolvemos', '🧰'],
+      ]);
+
+      document.querySelectorAll('#servicos .card h3').forEach((h3) => {
+        if (h3.querySelector('.h3-icon')) return;
+        const key = normalize(h3.textContent);
+        const icon = icons.get(key);
+        if (!icon) return;
+        const span = document.createElement('span');
+        span.className = 'h3-icon';
+        span.setAttribute('aria-hidden', 'true');
+        span.textContent = icon;
+        h3.appendChild(span);
+      });
+    })();
+
+    // Ajusta os botões de exemplo para usar arquivos em /cases
+    (function enforceCaseExampleButtons() {
+      const normalize = (s) =>
+        (s || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+
+      const rules = [
+        ['landing page', 'landing-page'],
+        ['dashboard de vendas', 'dashboard-vendas'],
+        ['scraping de concorr', 'scraping-concorrencia'],
+        ['planilha inteligente', 'planilha-inteligente'],
+      ];
+
+      document.querySelectorAll('#portfolio .case').forEach((card) => {
+        const labelEl = card.querySelector('small');
+        const norm = normalize(labelEl?.textContent);
+        const rule = rules.find(([key]) => norm && (norm.startsWith(key) || norm.includes(key)));
+        const slug = rule ? rule[1] : undefined;
+
+        // remove qualquer botão antigo
+        card.querySelectorAll('.case-summary-btn, .case-example-btn').forEach((el) => el.remove());
+
+        if (slug) {
+          const btn = document.createElement('a');
+          btn.href = `cases/${slug}.html`;
+          btn.target = '_blank';
+          btn.rel = 'noopener';
+          btn.className = 'btn btn-primary case-example-btn';
+          btn.textContent = 'Ver exemplo';
+          card.appendChild(btn);
+        }
+      });
+    })();
+
+    // Bot�o "Ver resumo" nos cards de resultados
+    (function addCaseSummaryButtons() {
+      const normalize = (s) =>
+        (s || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .toLowerCase()
+          .trim();
+
+      // Sem botões de resumo: apenas exemplos quando disponíveis
+
+      document.querySelectorAll('#portfolio .case').forEach((card) => {
+        const hasExample = !!card.querySelector('.case-example-btn');
+        const labelEl = card.querySelector('small');
+        const norm = normalize(labelEl?.textContent);
+
+        // Para o caso "Landing Page", adiciona também o botão de exemplo
+        if (!hasExample && norm && (norm === 'landing page' || norm.includes('landing page'))) {
+          const ex = document.createElement('a');
+          ex.href = 'landing-page/';
+          ex.target = '_blank';
+          ex.rel = 'noopener';
+          ex.className = 'btn btn-primary case-example-btn';
+          ex.textContent = 'Ver exemplo';
+          card.appendChild(ex);
+        }
+
+        // Botão de resumo (para todos os casos mapeados)
+        // Sem botão de resumo
+      });
+    })();
 
     // Contato → WhatsApp + fallback e-mail
     const WHATSAPP_NUMBER = '55XXXXXXXXXXX'; // TODO: insira seu número com DDI e DDD, ex.: 5599999999999

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case: Planilha Inteligente — Simulacao</title>
+  <link rel="icon" href="../logo.png" type="image/png" />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/handsontable/dist/handsontable.full.min.js"></script>
+
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background:#f5f7fb; color:#212529; margin:0; padding:20px }
+    .container { max-width:1200px; margin:0 auto; background:#fff; padding:24px; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,.08) }
+    header { border-bottom:1px solid #e5e9f2; padding-bottom:14px; margin-bottom:18px }
+    header h1 { margin:0; color:#2b3a55; font-size:26px }
+    header p { margin:6px 0 0; color:#6c7a91 }
+
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; margin:14px 0 16px }
+    .toolbar .left { display:flex; gap:8px; flex-wrap:wrap; align-items:center }
+
+    .btn { appearance:none; border:1px solid #d0d7e2; background:#fff; color:#2b3a55; padding:10px 12px; border-radius:8px; font-weight:600; cursor:pointer; transition:.15s all }
+    .btn:hover { background:#f6f9ff; border-color:#b7c3d9 }
+    .btn-primary { background:#2c7be5; border-color:#2c7be5; color:#fff }
+    .btn-primary:hover { background:#1f6bd3; border-color:#1f6bd3 }
+    .btn-danger { background:#e55353; border-color:#e55353; color:#fff }
+    .btn-danger:hover { background:#d64545; border-color:#d64545 }
+    .file-btn { position:relative; overflow:hidden }
+    .file-btn input { position:absolute; inset:0; opacity:0; cursor:pointer }
+
+    .summary { display:grid; grid-template-columns: repeat(3, minmax(160px,1fr)); gap:10px; margin:10px 0 6px }
+    .summary .kpi { background:#f6f9ff; border:1px solid #e1e7f0; border-radius:8px; padding:10px 12px }
+    .summary .kpi h4 { margin:0; color:#6c7a91; font-size:12px; font-weight:700; letter-spacing:.3px; text-transform:uppercase }
+    .summary .kpi p { margin:4px 0 0; font-size:18px; font-weight:800; color:#2b3a55 }
+
+    #spreadsheet { width:100%; height:440px; overflow:hidden }
+    .htCore th, .htCore td { border-right:1px solid #f0f2f5; border-bottom:1px solid #f0f2f5 }
+    .htCore th { background:#f8fafc; font-weight:700 }
+    .invalid { background:#fff1f1 !important }
+
+    .macro-bar { display:flex; gap:8px; flex-wrap:wrap; margin:6px 0 12px }
+    .report-card { background:#f8fafc; border:1px solid #e1e7f0; border-radius:8px; padding:12px; margin-top:10px }
+    .report-card h3 { margin:0 0 8px; font-size:16px; color:#2b3a55 }
+    .report-card pre { margin:0; white-space:pre-wrap; color:#33415c }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Planilha Inteligente de Vendas (Simulacao)</h1>
+      <p>Auto-calculo, validacao, macros e exportacao. Edite as celulas como em uma planilha.</p>
+    </header>
+
+    <div class="toolbar">
+      <div class="left">
+        <button class="btn btn-primary" id="addButton">Adicionar linha</button>
+        <button class="btn" id="removeButton">Remover linha selecionada</button>
+        <label class="btn file-btn">Importar CSV<input id="importInput" type="file" accept=".csv,text/csv"></label>
+        <button class="btn" id="exportButton">Exportar CSV</button>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="kpi"><h4>Total geral</h4><p id="kpiTotal">R$ 0,00</p></div>
+      <div class="kpi"><h4>Itens (linhas)</h4><p id="kpiLinhas">0</p></div>
+      <div class="kpi"><h4>Ticket medio</h4><p id="kpiTicket">R$ 0,00</p></div>
+    </div>
+
+    <div class="macro-bar">
+      <button class="btn" id="macroDiscount">Macro: 10% desc. (Qtd >= 10)</button>
+      <button class="btn" id="macroConsolidate">Macro: Consolidar duplicatas</button>
+      <button class="btn" id="macroRecalc">Recalcular totais</button>
+      <button class="btn btn-danger" id="macroClear">Limpar planilha</button>
+    </div>
+
+    <div id="spreadsheet"></div>
+
+    <div class="report-card" id="report" hidden>
+      <h3>Relatorio</h3>
+      <pre id="reportContent"></pre>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const LOCAL_KEY = 'case_planilha_inteligente_v2';
+
+      // Dados iniciais (fallback)
+      const seed = [
+        { produto: 'Notebook Gamer', categoria: 'Eletronicos', precoUnitario: 5500, quantidade: 10, total: 55000 },
+        { produto: 'Cadeira de Escritorio', categoria: 'Moveis', precoUnitario: 850, quantidade: 25, total: 21250 },
+        { produto: 'Monitor Ultrawide 29"', categoria: 'Eletronicos', precoUnitario: 1200, quantidade: 15, total: 18000 },
+        { produto: 'Teclado Mecanico', categoria: 'Acessorios', precoUnitario: 350, quantidade: 30, total: 10500 },
+        { produto: 'Mouse Sem Fio', categoria: 'Acessorios', precoUnitario: 150, quantidade: 50, total: 7500 }
+      ];
+
+      const loadLocal = () => {
+        try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || 'null') || seed.slice(); } catch { return seed.slice(); }
+      };
+      const saveLocal = (rows) => { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(rows)); } catch {} };
+
+      const els = {
+        kpiTotal: document.getElementById('kpiTotal'),
+        kpiLinhas: document.getElementById('kpiLinhas'),
+        kpiTicket: document.getElementById('kpiTicket'),
+        addBtn: document.getElementById('addButton'),
+        removeBtn: document.getElementById('removeButton'),
+        exportBtn: document.getElementById('exportButton'),
+        importInput: document.getElementById('importInput'),
+        mDiscount: document.getElementById('macroDiscount'),
+        mConsolidate: document.getElementById('macroConsolidate'),
+        mRecalc: document.getElementById('macroRecalc'),
+        mClear: document.getElementById('macroClear'),
+        report: document.getElementById('report'),
+        reportContent: document.getElementById('reportContent'),
+      };
+
+      const spreadsheetContainer = document.getElementById('spreadsheet');
+
+      const recalcRow = (inst, rowIndex) => {
+        const preco = parseFloat(inst.getDataAtRowProp(rowIndex, 'precoUnitario')) || 0;
+        const qtd = parseInt(inst.getDataAtRowProp(rowIndex, 'quantidade')) || 0;
+        const total = preco * qtd;
+        inst.setDataAtRowProp(rowIndex, 'total', total, 'internal');
+      };
+
+      const updateKPIs = (inst) => {
+        const data = inst.getSourceData();
+        const total = data.reduce((acc, r) => acc + (Number(r.total) || 0), 0);
+        const itens = data.length;
+        const unidades = data.reduce((a, r) => a + (Number(r.quantidade) || 0), 0);
+        const ticket = unidades ? total / unidades : 0;
+        els.kpiTotal.textContent = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        els.kpiLinhas.textContent = String(itens);
+        els.kpiTicket.textContent = ticket.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+      };
+
+      const refreshValidation = (inst) => {
+        const rows = inst.countRows();
+        for (let r = 0; r < rows; r++) {
+          const preco = Number(inst.getDataAtCell(r, 2));
+          const qtd = Number(inst.getDataAtCell(r, 3));
+          if (preco < 0) inst.setCellMeta(r, 2, 'className', 'invalid'); else inst.removeCellMeta(r, 2, 'className');
+          if (qtd < 0) inst.setCellMeta(r, 3, 'className', 'invalid'); else inst.removeCellMeta(r, 3, 'className');
+        }
+        inst.render();
+      };
+
+      const data = loadLocal();
+
+      const instance = new Handsontable(spreadsheetContainer, {
+        data,
+        rowHeaders: true,
+        colHeaders: ['Produto', 'Categoria', 'Preco Unitario (R$)', 'Quantidade', 'Total (R$)'],
+        columns: [
+          { data: 'produto', type: 'text' },
+          { data: 'categoria', type: 'text' },
+          { data: 'precoUnitario', type: 'numeric', numericFormat: { pattern: '0,0.00', culture: 'pt-BR' } },
+          { data: 'quantidade', type: 'numeric' },
+          { data: 'total', type: 'numeric', numericFormat: { pattern: '0,0.00', culture: 'pt-BR' }, readOnly: true },
+        ],
+        stretchH: 'all',
+        height: 'auto',
+        licenseKey: 'non-commercial-and-evaluation',
+        cells: function () { return {}; },
+        afterChange: function (changes, source) {
+          const inst = this;
+          if (source === 'loadData') return;
+          if (!Array.isArray(changes)) return;
+          changes.forEach(([row, prop]) => {
+            if (prop === 'precoUnitario' || prop === 'quantidade') recalcRow(inst, row);
+          });
+          refreshValidation(inst);
+          updateKPIs(inst);
+          saveLocal(inst.getSourceData());
+        },
+        afterLoadData: function () {
+          const inst = this;
+          for (let r = 0; r < inst.countRows(); r++) recalcRow(inst, r);
+          refreshValidation(inst);
+          updateKPIs(inst);
+        },
+      });
+
+      // Depois da inicializacao, usamos a referencia para os controles
+      const hot = instance;
+
+      // Toolbar
+      els.addBtn.addEventListener('click', () => {
+        hot.alter('insert_row', hot.countRows());
+        const r = hot.countRows() - 1;
+        hot.setDataAtRowProp(r, 'produto', 'Novo Item');
+        hot.setDataAtRowProp(r, 'categoria', '');
+        hot.setDataAtRowProp(r, 'precoUnitario', 0, 'internal');
+        hot.setDataAtRowProp(r, 'quantidade', 0, 'internal');
+        hot.setDataAtRowProp(r, 'total', 0, 'internal');
+        refreshValidation(hot);
+        updateKPIs(hot);
+        saveLocal(hot.getSourceData());
+      });
+
+      els.removeBtn.addEventListener('click', () => {
+        const sel = hot.getSelectedLast();
+        if (!sel) return;
+        const [r1, , r2] = sel;
+        const start = Math.min(r1, r2);
+        const count = Math.abs(r1 - r2) + 1;
+        hot.alter('remove_row', start, count);
+        refreshValidation(hot);
+        updateKPIs(hot);
+        saveLocal(hot.getSourceData());
+      });
+
+      // Macros
+      els.mDiscount.addEventListener('click', () => {
+        for (let r = 0; r < hot.countRows(); r++) {
+          const qtd = Number(hot.getDataAtRowProp(r, 'quantidade')) || 0;
+          if (qtd >= 10) {
+            const preco = Number(hot.getDataAtRowProp(r, 'precoUnitario')) || 0;
+            const novo = +(preco * 0.9).toFixed(2);
+            hot.setDataAtRowProp(r, 'precoUnitario', novo);
+            recalcRow(hot, r);
+          }
+        }
+        refreshValidation(hot);
+        updateKPIs(hot);
+        saveLocal(hot.getSourceData());
+      });
+
+      els.mConsolidate.addEventListener('click', () => {
+        const src = hot.getSourceData();
+        const map = new Map();
+        for (const row of src) {
+          const key = `${(row.produto||'').trim().toLowerCase()}|${(row.categoria||'').trim().toLowerCase()}`;
+          if (!map.has(key)) map.set(key, { produto: row.produto||'', categoria: row.categoria||'', quantidade:0, somaPreco:0 });
+          const qtd = Number(row.quantidade)||0;
+          const preco = Number(row.precoUnitario)||0;
+          const total = preco*qtd;
+          const acc = map.get(key);
+          acc.quantidade += qtd;
+          acc.somaPreco += total;
+        }
+        const novo = [];
+        for (const [key, acc] of map.entries()) {
+          const precoMedio = acc.quantidade ? +(acc.somaPreco/acc.quantidade).toFixed(2) : 0;
+          const [produto, categoria] = key.split('|');
+          novo.push({ produto, categoria, precoUnitario: precoMedio, quantidade: acc.quantidade, total: +(precoMedio*acc.quantidade).toFixed(2) });
+        }
+        hot.loadData(novo);
+        refreshValidation(hot);
+        updateKPIs(hot);
+        saveLocal(hot.getSourceData());
+        els.report.hidden = false;
+        els.reportContent.textContent = 'Consolidacao concluida. Linhas agrupadas por Produto + Categoria com preco medio ponderado.';
+      });
+
+      els.mRecalc.addEventListener('click', () => {
+        for (let r = 0; r < hot.countRows(); r++) recalcRow(hot, r);
+        refreshValidation(hot);
+        updateKPIs(hot);
+        saveLocal(hot.getSourceData());
+      });
+
+      els.mClear.addEventListener('click', () => {
+        hot.loadData([]);
+        refreshValidation(hot);
+        updateKPIs(hot);
+        saveLocal([]);
+        els.report.hidden = false;
+        els.reportContent.textContent = 'Planilha limpa.';
+      });
+
+      // Exportar CSV
+      els.exportBtn.addEventListener('click', () => {
+        const rows = hot.getSourceData();
+        const header = ['Produto','Categoria','PrecoUnitario','Quantidade','Total'];
+        const csv = [header.join(',')].concat(rows.map(r => [
+          (r.produto||'').toString().replace(/,/g, ' '),
+          (r.categoria||'').toString().replace(/,/g, ' '),
+          Number(r.precoUnitario)||0,
+          Number(r.quantidade)||0,
+          Number(r.total)||0,
+        ].join(','))).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'planilha-vendas.csv'; a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      // Importar CSV
+      els.importInput.addEventListener('change', (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const text = String(reader.result||'');
+          const lines = text.split(/\r?\n/).filter(Boolean);
+          if (!lines.length) return;
+          const out = [];
+          for (let i = 1; i < lines.length; i++) {
+            const parts = lines[i].split(',');
+            if (!parts.length) continue;
+            const produto = parts[0]||''; const categoria = parts[1]||'';
+            const preco = Number(parts[2])||0; const qtd = Number(parts[3])||0; const total = parts[4] ? Number(parts[4])|| (preco*qtd) : (preco*qtd);
+            out.push({ produto, categoria, precoUnitario: preco, quantidade: qtd, total });
+          }
+          hot.loadData(out);
+          refreshValidation(hot);
+          updateKPIs(hot);
+          saveLocal(hot.getSourceData());
+          els.report.hidden = false;
+          els.reportContent.textContent = 'Importacao concluida: ' + out.length + ' linhas.';
+          e.target.value = '';
+        };
+        reader.readAsText(file);
+      });
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Web Scraping</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+        }
+
+        .scraper-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #userInput {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #userInput:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        #scrapeButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        #scrapeButton:hover {
+            background-color: #0056b3;
+        }
+        
+        #scrapeButton:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .results-area {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            color: #f4f4f4;
+            font-family: 'Roboto Mono', monospace;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+        
+        #status {
+            color: #f0ad4e; /* Amarelo/Laranja para status */
+            margin-bottom: 15px;
+        }
+        
+        .result-item {
+            border-bottom: 1px dashed #555;
+            padding: 10px 0;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-item strong {
+            color: #56c2e8; /* Azul claro para o nome do repo */
+        }
+        
+        .result-item a {
+            color: #90ee90; /* Verde claro para links */
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Simulador de Web Scraping</h1>
+            <p>Extraindo nomes de repositórios públicos do GitHub via API.</p>
+        </header>
+
+        <div class="scraper-form">
+            <input type="text" id="userInput" value="google" placeholder="Digite um usuário do GitHub (ex: microsoft)">
+            <button id="scrapeButton">Extrair Dados</button>
+        </div>
+
+        <div class="results-area">
+            <pre id="status">Aguardando comando para iniciar a extração...</pre>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const userInput = document.getElementById('userInput');
+        const scrapeButton = document.getElementById('scrapeButton');
+        const statusElement = document.getElementById('status');
+        const resultsContainer = document.getElementById('results');
+
+        // Adiciona um listener para o botão de "Extrair"
+        scrapeButton.addEventListener('click', async () => {
+            const username = userInput.value.trim();
+            if (!username) {
+                updateStatus('Erro: Por favor, insira um nome de usuário.', 'error');
+                return;
+            }
+
+            // Desabilita o botão e limpa resultados antigos
+            toggleLoading(true);
+            resultsContainer.innerHTML = '';
+
+            try {
+                // 1. REQUISIÇÃO: Monta a URL da API e faz a chamada
+                updateStatus(`[1/3] Conectando à API do GitHub para o usuário "${username}"...`);
+                const apiUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`;
+                
+                // O `fetch` é a ferramenta principal para fazer requisições web em JS
+                const response = await fetch(apiUrl);
+
+                // Verifica se a resposta da requisição foi bem-sucedida
+                if (!response.ok) {
+                    throw new Error(`Não foi possível encontrar o usuário ou houve um erro na rede. Status: ${response.status}`);
+                }
+                
+                // Converte a resposta em formato JSON (um formato de dados padrão na web)
+                const data = await response.json();
+
+                // 2. EXTRAÇÃO: Processa os dados recebidos
+                updateStatus(`[2/3] Dados recebidos! Extraindo nomes e links de ${data.length} repositórios...`);
+                
+                if (data.length === 0) {
+                     updateStatus(`[3/3] O usuário "${username}" não possui repositórios públicos.`);
+                     toggleLoading(false);
+                     return;
+                }
+                
+                // Cria o HTML para exibir os resultados
+                const resultsHTML = data.map(repo => {
+                    // Para cada item (repo) na lista de dados, extraímos o nome e o link
+                    const repoName = repo.name;
+                    const repoUrl = repo.html_url;
+                    
+                    // Retornamos um bloco de HTML formatado
+                    return `
+                        <div class="result-item">
+                            <strong>Repositório:</strong> ${repoName}<br>
+                            <strong>URL:</strong> <a href="${repoUrl}" target="_blank">${repoUrl}</a>
+                        </div>
+                    `;
+                }).join(''); // O .join junta todos os blocos de HTML em um único texto
+
+                // 3. EXIBIÇÃO: Mostra os resultados na tela
+                updateStatus(`[3/3] Extração concluída com sucesso!`);
+                resultsContainer.innerHTML = resultsHTML;
+
+            } catch (error) {
+                // Trata possíveis erros durante o processo
+                updateStatus(`Erro na extração: ${error.message}`, 'error');
+            } finally {
+                // Reabilita o botão ao final do processo
+                toggleLoading(false);
+            }
+        });
+        
+        function updateStatus(message) {
+            statusElement.textContent = message;
+        }
+        
+        function toggleLoading(isLoading) {
+             scrapeButton.disabled = isLoading;
+             scrapeButton.textContent = isLoading ? 'Extraindo...' : 'Extrair Dados';
+        }
+
+    </script>
+
+</body>
+</html>

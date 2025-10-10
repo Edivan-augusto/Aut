@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Vendas - Tráfego Pago</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        header {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        header h1 {
+            margin: 0;
+            color: #2c3e50;
+            text-align: center;
+        }
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .kpi-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .kpi-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        .kpi-card p {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .chart-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Dashboard de Análise de Vendas por Tráfego Pago</h1>
+        </header>
+
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>Total de Vendas</h3>
+                <p id="totalVendas">R$ 0,00</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Custo por Clique (CPC)</h3>
+                <p id="cpcMedio">R$ 0,00</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Custo por Aquisição (CPA)</h3>
+                <p id="cpaMedio">R$ 0,00</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Retorno (ROI)</h3>
+                <p id="roi">0%</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <canvas id="vendasPorCanal"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="evolucaoVendas"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="distribuicaoVendas"></canvas>
+            </div>
+             <div class="chart-container">
+                <canvas id="custoPorPlataforma"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DADOS DE EXEMPLO ---
+        // Em uma aplicação real, estes dados viriam de um banco de dados ou API.
+        const salesData = {
+            totalVendas: 150000,
+            investimentoTotal: 25000,
+            totalCliques: 50000,
+            totalConversoes: 2500,
+            vendasPorCanal: {
+                labels: ['Google Ads', 'Facebook Ads', 'Instagram Ads', 'TikTok Ads', 'Taboola'],
+                datasets: [{
+                    label: 'Vendas (R$)',
+                    data: [65000, 45000, 25000, 10000, 5000],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)'
+                    ]
+                }]
+            },
+            evolucaoVendas: {
+                labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'],
+                datasets: [{
+                    label: 'Vendas Mensais (R$)',
+                    data: [20000, 25000, 35000, 30000, 40000, 50000],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            distribuicaoVendas: {
+                labels: ['Campanha A', 'Campanha B', 'Campanha C', 'Outras'],
+                datasets: [{
+                    data: [40, 30, 15, 15],
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0'
+                    ]
+                }]
+            },
+            custoPorPlataforma: {
+                labels: ['Google Ads', 'Facebook Ads', 'Instagram Ads', 'TikTok Ads', 'Taboola'],
+                datasets: [{
+                    label: 'Custo (R$)',
+                    data: [12000, 8000, 3500, 1000, 500],
+                     backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(153, 102, 255, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        };
+
+        // --- ATUALIZAÇÃO DOS KPIs ---
+        document.getElementById('totalVendas').innerText = `R$ ${salesData.totalVendas.toLocaleString('pt-BR')}`;
+        
+        const cpcMedio = salesData.investimentoTotal / salesData.totalCliques;
+        document.getElementById('cpcMedio').innerText = `R$ ${cpcMedio.toFixed(2)}`;
+
+        const cpaMedio = salesData.investimentoTotal / salesData.totalConversoes;
+        document.getElementById('cpaMedio').innerText = `R$ ${cpaMedio.toFixed(2)}`;
+        
+        const roi = ((salesData.totalVendas - salesData.investimentoTotal) / salesData.investimentoTotal) * 100;
+        document.getElementById('roi').innerText = `${roi.toFixed(1)}%`;
+
+        // --- CONFIGURAÇÃO E RENDERIZAÇÃO DOS GRÁFICOS ---
+        
+        // Gráfico de Barras: Vendas por Canal
+        const ctxVendasCanal = document.getElementById('vendasPorCanal').getContext('2d');
+        new Chart(ctxVendasCanal, {
+            type: 'bar',
+            data: salesData.vendasPorCanal,
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Vendas por Canal de Tráfego'
+                    },
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Linha: Evolução das Vendas
+        const ctxEvolucaoVendas = document.getElementById('evolucaoVendas').getContext('2d');
+        new Chart(ctxEvolucaoVendas, {
+            type: 'line',
+            data: salesData.evolucaoVendas,
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Evolução das Vendas no Tempo'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Pizza: Distribuição de Vendas por Campanha
+        const ctxDistribuicaoVendas = document.getElementById('distribuicaoVendas').getContext('2d');
+        new Chart(ctxDistribuicaoVendas, {
+            type: 'pie',
+            data: salesData.distribuicaoVendas,
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Distribuição de Vendas por Campanha (%)'
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de Barras: Custo por Plataforma
+        const ctxCustoPlataforma = document.getElementById('custoPorPlataforma').getContext('2d');
+        new Chart(ctxCustoPlataforma, {
+            type: 'bar',
+            data: salesData.custoPorPlataforma,
+            options: {
+                indexAxis: 'y', // Para criar barras horizontais
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Custo por Plataforma'
+                    },
+                     legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
