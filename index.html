@@ -34,6 +34,8 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    img, svg { max-width: 100%; height: auto; }
     body {
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
       /* Gradiente tecnológico em camadas (neon magenta/ciano + grid sutil) */
@@ -192,9 +194,10 @@
     }
     .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
     @media (max-width: 560px){
-      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; }
-      .auto-cta-footer .actions{ width:100%; flex-direction:column; }
-      .auto-cta-footer .actions a{ width:100%; text-align:center; }
+      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; padding: 10px 14px; }
+      .auto-cta-footer .actions{ width:100%; flex-direction:row; align-items:stretch; gap: 8px; }
+      .auto-cta-footer .actions a{ flex: 1 1 0; text-align:center; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
     }
 
     /* WhatsApp FAB - estilo vidro */
@@ -236,8 +239,16 @@
       section { padding: 64px 0; scroll-margin-top: 108px; }
       .brand img { width: 64px; height: 64px; }
       .brand span { font-size: 1.1rem; }
-      body { padding-top: 98px; }
+      body { padding-top: 98px; padding-bottom: 68px; }
+      footer { padding: 32px 0; }
       .nav-inner { padding: 12px 24px; }
+      .container { padding: 0 24px; }
+      .grid-produtos { grid-template-columns: 1fr; }
+      .trust-strip { display: flex; flex-wrap: wrap; gap: 10px 12px; }
+      /* Evita possíveis janks de background fixo em mobile */
+      body { background-attachment: scroll; }
+      /* Ajusta a altura do FAB de WhatsApp para o novo footer menor */
+      .whatsapp-fab { display: none; }
     }
     @media (max-width: 1100px) {
       .nav-links { gap: 12px; }
@@ -520,6 +531,11 @@
             <h3>Fechamento 2x mais rápido</h3>
             <p class="lead">Macros e validações automatizando consolidação, relatórios e conferências financeiras.</p>
           </article>
+          <article class="case">
+            <small>Robô de Trading</small>
+            <h3>Execução 24/7 com gestão de risco</h3>
+            <p class="lead">Bots conectados a corretoras/exchanges com regras, logs e backtests.</p>
+          </article>
         </div>
       </div>
     </section>
@@ -706,6 +722,7 @@
         ['dashboard de vendas', 'dashboard-vendas'],
         ['scraping de concorr', 'scraping-concorrencia'],
         ['planilha inteligente', 'planilha-inteligente'],
+        ['robo de trading', 'Trading-chart'],
       ];
 
       document.querySelectorAll('#portfolio .case').forEach((card) => {

@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@16.1.1/styles/ht-theme-main.min.css" />
 
   <style>
+    html, body { max-width: 100%; overflow-x: hidden; }
+    img, svg { max-width: 100%; height: auto; }
     :root { --bg:#ffffff; --fg:#222; --accent:#00bf8f; --accent2:#3d5afe; --muted:#6b7280; }
     body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,Segoe UI,Roboto,Ubuntu,Arial; padding-bottom:96px }
     header{display:flex;gap:.5rem;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1f634e;background:linear-gradient(90deg,#0f4d3f,#0a3f34);position:sticky;top:0;z-index:5;color:#e6f3ef}
@@ -51,9 +53,10 @@
     #hot{ min-width:680px }
     @media (max-width: 640px){
       #hot{ min-width:560px; height:60vh }
+      header{ flex-direction:column; align-items:stretch; gap:8px }
       /* Mantém os botões lado a lado no mobile */
-      .buttons{ flex-wrap:nowrap; overflow-x:auto }
-      .buttons button{ padding:8px 10px; font-size:13px }
+      .buttons{ width:100%; flex-wrap:wrap; overflow-x:visible }
+      .buttons button{ padding:6px 10px; font-size:12px; flex:1 1 calc(50% - 6px) }
     }
     .handsontable.ht-theme-main .ht__highlight, 
     .handsontable.ht-theme-main .area{background-color:#00bf8f33}
@@ -269,6 +272,12 @@
       .auto-cta-footer .inner{ flex-direction:column; align-items:stretch; }
       .auto-cta-footer .actions{ width:100%; flex-direction:row; justify-content:space-between; }
       .auto-cta-footer .actions a{ flex:1 1 0; text-align:center; }
+    }
+    /* Ajustes extras para reduzir altura no mobile ~20% */
+    @media (max-width: 560px){
+      .auto-cta-footer .inner { padding: 10px 14px; }
+      .auto-cta-footer .actions { gap: 8px; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
     }
   </style>
   <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">

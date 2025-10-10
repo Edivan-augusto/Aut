@@ -25,6 +25,8 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    html, body { max-width: 100%; overflow-x: hidden; }
+    img, svg { max-width: 100%; height: auto; }
     body { font-family: var(--font-primary); background: var(--background-color); color: var(--text-color); line-height: 1.6; }
     .container { max-width: var(--container); margin: 0 auto; padding: 0 20px; }
 
@@ -291,9 +293,11 @@
     }
     .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
     @media (max-width: 560px){
-      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; }
-      .auto-cta-footer .actions{ width:100%; flex-direction:column; }
-      .auto-cta-footer .actions a{ width:100%; text-align:center; }
+      body { padding-bottom: 68px; }
+      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; padding: 10px 14px; }
+      .auto-cta-footer .actions{ width:100%; flex-direction:row; align-items:stretch; gap: 8px; }
+      .auto-cta-footer .actions a{ flex: 1 1 0; text-align:center; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
     }
   </style>
   <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulador de Web Scraping</title>
     <style>
+        html, body { max-width: 100%; overflow-x: hidden; }
+        img, svg { max-width: 100%; height: auto; }
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
 
         body {
@@ -26,6 +28,12 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 560px){
+            .container { padding: 16px; }
+            .scraper-form { flex-direction: column; }
+            #scrapeButton { width: 100%; padding: 14px; }
+            .results-area { min-height: 200px; padding: 14px; }
         }
 
         header {
@@ -69,12 +77,13 @@
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 0 25px;
+            padding: 12px 25px; /* mais grosso */
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
             font-weight: bold;
             transition: background-color 0.3s;
+            line-height: 1;
         }
 
         #scrapeButton:hover {
@@ -251,9 +260,11 @@
     }
     .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
     @media (max-width: 560px){
-      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; }
-      .auto-cta-footer .actions{ width:100%; flex-direction:column; }
-      .auto-cta-footer .actions a{ width:100%; text-align:center; }
+      body { padding-bottom: 68px; }
+      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; padding: 10px 14px; }
+      .auto-cta-footer .actions{ width:100%; flex-direction:row; align-items:stretch; gap: 8px; }
+      .auto-cta-footer .actions a{ flex: 1 1 0; text-align:center; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
     }
   </style>
   <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">
