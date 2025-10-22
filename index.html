@@ -36,6 +36,22 @@
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="pt_BR" />
   <!-- TikTok Pixel Code Start -->
+  <!-- Event snippet for Click_WhatsApp_Site conversion page
+  In your html page, add the snippet and call gtag_report_conversion when someone clicks on the chosen link or button. -->
+  <script>
+  function gtag_report_conversion(url) {
+    var callback = function () {
+      if (typeof(url) != 'undefined') {
+        window.location = url;
+      }
+    };
+    gtag('event', 'conversion', {
+        'send_to': 'AW-430636457/l_VOCMrqsYIbEKn7q80B',
+        'event_callback': callback
+    });
+    return false;
+  }
+  </script>
   <script>
   !function (w, d, t) {
     w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
@@ -628,7 +644,7 @@
             <label for="message">Mensagem</label>
             <textarea id="message" name="message" rows="5" required placeholder="Descreva em 2–3 linhas o que você precisa"></textarea>
           </div>
-          <button type="submit" class="btn btn-primary">Enviar pelo WhatsApp</button>
+          <button type="submit" class="btn btn-primary"  onclick="return gtag_report_conversion('https://api.whatsapp.com/send?phone=5511999999999');">Enviar pelo WhatsApp</button>
           
           </form>
         </div>
@@ -643,7 +659,7 @@
         <p class="lead">Descreva seu projeto e receba em até 24h.</p>
         <div class="cta-row">
           <a href="#contato" class="btn btn-primary">EU QUERO!</a>
-          <a href="#" id="footerWhats" class="btn btn-ghost">WhatsApp agora</a>
+          <a href="#" id="footerWhats" class="btn btn-ghost"  onclick="return gtag_report_conversion('https://api.whatsapp.com/send?phone=5511999999999');">WhatsApp agora</a>
         </div>
       </div>
       
@@ -665,7 +681,7 @@
       </div>
       <div class="actions">
         <a class="btn-back" href="#" onclick="event.preventDefault(); if (history.length > 1) { history.back(); } else { window.scrollTo({top:0,behavior:'smooth'}); }">Voltar</a>
-        <a class="btn-buy" href="https://wa.me/5534998878515?text=Ol%C3%A1!%20Quero%20fazer%20um%20or%C3%A7amento." target="_blank" rel="noopener" style="animation: ctaGlow 2.8s ease-in-out infinite;">EU QUERO!</a>
+        <a class="btn-buy" href="https://wa.me/5534998878515?text=Ol%C3%A1!%20Quero%20fazer%20um%20or%C3%A7amento."  onclick="return gtag_report_conversion('https://api.whatsapp.com/send?phone=5511999999999');" target="_blank" rel="noopener" style="animation: ctaGlow 2.8s ease-in-out infinite;">EU QUERO!</a>
       </div>
     </div>
   </div>
