@@ -104,7 +104,7 @@
       padding-bottom: 96px; /* espaço para a barra fixa de CTA */
     }
 
-    section { padding: 80px 0; scroll-margin-top: 128px; }
+    section { padding: 80px 0; scroll-margin-top: calc(var(--nav-h, 108px) + 20px); }
     .container { max-width: var(--container); margin: 0 auto; padding: 0 20px; }
     h1, h2, h3 { color: var(--neon-ciano); margin-bottom: 18px; }
     p.lead { color: var(--cor-texto-secundario); font-size: 1.15rem; }
@@ -286,7 +286,7 @@
     }
     @media (max-width: 720px) {
       .nav-links { display: none; }
-      section { padding: 64px 0; scroll-margin-top: 108px; }
+      section { padding: 64px 0; scroll-margin-top: calc(var(--nav-h, 98px) + 16px); }
       .brand img { width: 64px; height: 64px; }
       .brand span { font-size: 0.95rem; }
       .lang-switcher { gap: 4px; margin-left: 8px; }
@@ -692,12 +692,21 @@
 </div>
 </div>
 <script>
-    // Ajuste: sombrear navbar ao rolar
+    // Navbar shadow + dynamic offset to avoid overlap
     const nav = document.querySelector('.navbar');
+    function adjustOffsets(){
+      if (!nav) return;
+      const h = nav.offsetHeight || 0;
+      document.documentElement.style.setProperty('--nav-h', h + 'px');
+      document.body.style.paddingTop = (h + 10) + 'px';
+    }
     window.addEventListener('scroll', () => {
+      if (!nav) return;
       if (window.scrollY > 8) nav.classList.add('navbar--shadow');
       else nav.classList.remove('navbar--shadow');
     });
+    window.addEventListener('load', adjustOffsets);
+    window.addEventListener('resize', adjustOffsets);
 
     // Abas de serviços
     function openTab(event, tabName) {
