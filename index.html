@@ -390,12 +390,12 @@
 <h2 id="servicosTitle" style="text-align:center">Nossos Serviços</h2>
 <p class="section-subtitle" id="servicosSubtitle">Escolha a categoria para ver soluções e ideias de projetos.</p>
 <div aria-label="Categorias de serviços" class="tabs" role="tablist">
-<button aria-selected="true" class="tab-button active" onclick="openTab(event,'desktop')" role="tab">Desktop</button>
-<button class="tab-button" onclick="openTab(event,'bots')" role="tab">Bots/Scripts</button>
-<button class="tab-button" onclick="openTab(event,'planilhas')" role="tab">Planilhas</button>
-<button class="tab-button" onclick="openTab(event,'web')" role="tab">Web/Site</button>
-<button class="tab-button" onclick="openTab(event,'powerbi')" role="tab">Power BI</button>
-<button class="tab-button" onclick="openTab(event,'outros')" role="tab">Outros</button>
+      <button id="tabDesktop" aria-selected="true" class="tab-button active" onclick="openTab(event,'desktop')" role="tab">Desktop</button>
+      <button id="tabBots" class="tab-button" onclick="openTab(event,'bots')" role="tab">Bots/Scripts</button>
+      <button id="tabSheets" class="tab-button" onclick="openTab(event,'planilhas')" role="tab">Planilhas</button>
+      <button id="tabWeb" class="tab-button" onclick="openTab(event,'web')" role="tab">Web/Site</button>
+      <button id="tabPowerBI" class="tab-button" onclick="openTab(event,'powerbi')" role="tab">Power BI</button>
+      <button id="tabOthers" class="tab-button" onclick="openTab(event,'outros')" role="tab">Outros</button>
 </div>
 <!-- Desktop -->
 <div class="tab-content active" id="desktop" role="tabpanel">
@@ -797,11 +797,24 @@
           .trim();
 
       const rules = [
+        // PT
         ['landing page', 'landing-page'],
         ['dashboard de vendas', 'dashboard-vendas'],
         ['scraping de concorr', 'scraping-concorrencia'],
         ['planilha inteligente', 'planilha-inteligente'],
         ['robo de trading', 'Trading-chart'],
+        // ES
+        ['pagina de destino', 'landing-page'],
+        ['dashboard de ventas', 'dashboard-vendas'],
+        ['scraping de competencia', 'scraping-concorrencia'],
+        ['hoja inteligente', 'planilha-inteligente'],
+        ['robot de trading', 'Trading-chart'],
+        // EN
+        ['landing', 'landing-page'],
+        ['sales dashboard', 'dashboard-vendas'],
+        ['competitor scraping', 'scraping-concorrencia'],
+        ['smart spreadsheet', 'planilha-inteligente'],
+        ['trading bot', 'Trading-chart'],
       ];
 
       document.querySelectorAll('#portfolio .case').forEach((card) => {
@@ -817,7 +830,9 @@
           const btn = document.createElement('a');
           btn.href = `cases/${slug}.html`;
           btn.className = 'btn btn-primary case-example-btn';
-          btn.textContent = 'Ver exemplo';
+          const lang = (localStorage.getItem('lang') || 'pt');
+          const label = { pt: 'Ver exemplo', es: 'Ver ejemplo', en: 'View example' }[lang] || 'Ver exemplo';
+          btn.textContent = label;
           card.appendChild(btn);
         }
       });
@@ -844,7 +859,8 @@
           const ex = document.createElement('a');
           ex.href = 'cases/landing-page.html';
           ex.className = 'btn btn-primary case-example-btn';
-          ex.textContent = 'Ver exemplo';
+          const lang = (localStorage.getItem('lang') || 'pt');
+          ex.textContent = ({ pt: 'Ver exemplo', es: 'Ver ejemplo', en: 'View example' }[lang] || 'Ver exemplo');
           card.appendChild(ex);
         }
 
@@ -855,8 +871,10 @@
 
     // Uniformiza o texto dos botões de serviço
     (function uniformServiceButtons(){
+      const lang = (localStorage.getItem('lang') || 'pt');
+      const label = { pt: 'Preciso disso', es: 'Lo necesito', en: 'I need this' }[lang] || 'Preciso disso';
       document.querySelectorAll('#servicos .card a.btn.btn-ghost')
-        .forEach((el) => { el.textContent = 'Preciso disso'; });
+        .forEach((el) => { el.textContent = label; });
     })();
 
     // Contato → WhatsApp
@@ -941,6 +959,34 @@
     if ($('#contatoTitle')) $('#contatoTitle').textContent = L.sections.contact.title;
     if ($('#contatoSubtitle')) $('#contatoSubtitle').textContent = L.sections.contact.subtitle;
 
+    // Tabs (services categories)
+    if ($('#tabDesktop')) $('#tabDesktop').textContent = L.tabs.desktop;
+    if ($('#tabBots')) $('#tabBots').textContent = L.tabs.bots;
+    if ($('#tabSheets')) $('#tabSheets').textContent = L.tabs.sheets;
+    if ($('#tabWeb')) $('#tabWeb').textContent = L.tabs.web;
+    if ($('#tabPowerBI')) $('#tabPowerBI').textContent = L.tabs.powerbi;
+    if ($('#tabOthers')) $('#tabOthers').textContent = L.tabs.others;
+
+    // About paragraphs
+    const aboutPs = $$('#sobre p');
+    if (aboutPs.length >= 2) {
+      aboutPs[0].textContent = L.about.p1;
+      aboutPs[1].textContent = L.about.p2;
+    }
+
+    // FAQ items
+    const faqItems = $$('#faq details');
+    if (L.faq && Array.isArray(L.faq.items)) {
+      faqItems.forEach((det, i) => {
+        const item = L.faq.items[i];
+        if (!item) return;
+        const sum = det.querySelector('summary');
+        const p = det.querySelector('p');
+        if (sum) sum.textContent = item.q;
+        if (p) p.textContent = item.a;
+      });
+    }
+
     // Contact form label/placeholder
     if ($('#labelMessage')) $('#labelMessage').textContent = L.contact.messageLabel;
     const msg = $('#message'); if (msg) msg.placeholder = L.contact.placeholder;
@@ -948,11 +994,19 @@
     // Buttons in contact/footer
     const btnSendContact = $('#sendContact');
     if (btnSendContact) btnSendContact.textContent = (L.contact.sendContact || 'Enviar mensagem');
+    // Update services ghost buttons label per language
+    $$('#servicos .card a.btn.btn-ghost').forEach((el)=>{ el.textContent = (L.services?.cardCta || el.textContent); });
 
     if ($('#footerCtaTitle')) $('#footerCtaTitle').textContent = L.footer.title;
     if ($('#footerCtaLead')) $('#footerCtaLead').textContent = L.footer.lead;
     const fw = $('#footerWhats'); if (fw) fw.textContent = (L.footer.contactNow || L.footer.whatsNow || 'Enviar agora');
     const ftg = $('#footerTg'); if (ftg) ftg.textContent = L.footer.tgNow;
+
+    // CTA buttons text
+    const ctaPrimary = document.querySelector('.footer-cta .btn.btn-primary');
+    if (ctaPrimary && L.footer.buyNow) ctaPrimary.textContent = L.footer.buyNow;
+    const stickyBuy = document.querySelector('.auto-cta-footer .btn-buy');
+    if (stickyBuy && L.footer.buyNow) stickyBuy.textContent = L.footer.buyNow;
 
     // Title
     if (L.metaTitle) document.title = L.metaTitle;
@@ -1045,6 +1099,67 @@
       footer: { title: 'Get your quote now', lead: 'Describe your project and hear back within 24h.', contactNow: 'Contact now', whatsNow: 'WhatsApp now', tgNow: 'Telegram now' }
     }
   };
+
+  // Extend i18n with additional texts without touching the original object shape
+  (function extendI18n(){
+    // Tabs
+    dict.pt.tabs = { desktop: 'Desktop', bots: 'Bots/Scripts', sheets: 'Planilhas', web: 'Web/Site', powerbi: 'Power BI', others: 'Outros' };
+    dict.es.tabs = { desktop: 'Escritorio', bots: 'Bots/Scripts', sheets: 'Hojas de cálculo', web: 'Web/Sitio', powerbi: 'Power BI', others: 'Otros' };
+    dict.en.tabs = { desktop: 'Desktop', bots: 'Bots/Scripts', sheets: 'Spreadsheets', web: 'Web/Site', powerbi: 'Power BI', others: 'Other' };
+
+    // About
+    dict.pt.about = {
+      p1: 'Somos um time de profissionais apaixonados por transformar processos em soluções simples e funcionais. Trabalhamos com foco em resultado, comunicação clara e prazos realistas.',
+      p2: 'Especialidades: Desenvolvimento Desktop e Web, Automação com Scripts, Dashboards e Data/ETL. Vamos tirar sua ideia do papel com segurança e velocidade.'
+    };
+    dict.es.about = {
+      p1: 'Somos un equipo apasionado por convertir procesos en soluciones simples y funcionales. Trabajamos con enfoque en resultados, comunicación clara y plazos realistas.',
+      p2: 'Especialidades: Desarrollo de Escritorio y Web, Automatización con Scripts, Dashboards y Datos/ETL. Llevamos tu idea a la realidad con seguridad y rapidez.'
+    };
+    dict.en.about = {
+      p1: 'We are a team passionate about turning processes into simple, functional solutions. We focus on results, clear communication, and realistic timelines.',
+      p2: 'Specialties: Desktop and Web development, Automation with Scripts, Dashboards and Data/ETL. We bring your idea to life safely and quickly.'
+    };
+
+    // FAQ
+    dict.pt.faq = { items: [
+      { q: 'Como funciona o orçamento?', a: 'Conversamos por WhatsApp, alinhamos escopo e prazos, e enviamos uma proposta objetiva em até 24h.' },
+      { q: 'Quais formas de pagamento?', a: 'Pix ou boleto. Dividimos por etapas quando fizer sentido.' },
+      { q: 'Tenho suporte após a entrega?', a: 'Sim. Incluímos um período de garantia para ajustes e podemos oferecer plano de evolução.' },
+      { q: 'Vocês assinam NDA?', a: 'Claro. Respeitamos a confidencialidade do seu projeto do início ao fim.' }
+    ] };
+    dict.es.faq = { items: [
+      { q: '¿Cómo funciona el presupuesto?', a: 'Hablamos por WhatsApp, alineamos alcance y plazos, y enviamos una propuesta objetiva en hasta 24 h.' },
+      { q: '¿Qué formas de pago aceptan?', a: 'Pix o boleto. Dividimos por etapas cuando tiene sentido.' },
+      { q: '¿Tengo soporte después de la entrega?', a: 'Sí. Incluimos un período de garantía para ajustes y podemos ofrecer un plan de evolución.' },
+      { q: '¿Firman NDA?', a: 'Claro. Respetamos la confidencialidad de tu proyecto de principio a fin.' }
+    ] };
+    dict.en.faq = { items: [
+      { q: 'How does the quote process work?', a: 'We chat on WhatsApp, align scope and timelines, and send a clear proposal within 24 hours.' },
+      { q: 'What payment methods?', a: 'Pix or boleto. We split by milestones when it makes sense.' },
+      { q: 'Do I have support after delivery?', a: 'Yes. We include a warranty period for adjustments and can offer an evolution plan.' },
+      { q: 'Do you sign an NDA?', a: 'Absolutely. We respect your project’s confidentiality from start to finish.' }
+    ] };
+
+    // Footer CTA button text and other labels
+    dict.pt.footer.buyNow = 'EU QUERO!';
+    dict.es.footer.buyNow = '¡LO QUIERO!';
+    dict.en.footer.buyNow = 'I WANT IT!';
+
+    // Portfolio and services labels used in other scripts
+    dict.pt.portfolio = Object.assign({ viewExample: 'Ver exemplo' }, dict.pt.portfolio || {});
+    dict.es.portfolio = Object.assign({ viewExample: 'Ver ejemplo' }, dict.es.portfolio || {});
+    dict.en.portfolio = Object.assign({ viewExample: 'View example' }, dict.en.portfolio || {});
+
+    dict.pt.services = Object.assign({ cardCta: 'Preciso disso' }, dict.pt.services || {});
+    dict.es.services = Object.assign({ cardCta: 'Lo necesito' }, dict.es.services || {});
+    dict.en.services = Object.assign({ cardCta: 'I need this' }, dict.en.services || {});
+
+    // FAQ subtitles
+    if (dict.pt.sections?.faq) dict.pt.sections.faq.subtitle = 'Transparência para você decidir com confiança.';
+    if (dict.es.sections?.faq) dict.es.sections.faq.subtitle = 'Transparencia para ayudarte a decidir con confianza.';
+    if (dict.en.sections?.faq) dict.en.sections.faq.subtitle = 'Transparency to help you decide confidently.';
+  })();
 
   // Hook up buttons
   $$('.lang-btn').forEach(btn=>{
