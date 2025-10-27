@@ -653,7 +653,7 @@
 <label for="message" id="labelMessage">Mensagem</label>
 <textarea data-i18n-placeholder="message.placeholder" id="message" name="message" placeholder="Descreva em 2–3 linhas o que você precisa" required="" rows="5"></textarea>
 </div>
-<button class="btn btn-primary" type="submit">Enviar pelo WhatsApp</button><button class="btn btn-ghost" id="sendTelegram" type="button">Enviar pelo Telegram</button>
+<button class="btn btn-primary" id="sendContact" type="button">Enviar mensagem</button>
 </form>
 </div>
 </div>
@@ -748,21 +748,32 @@
     })();
 
     // Global WhatsApp number (used across handlers)
-    // WHATSAPP_NUMBER definido acima
+    const WHATSAPP_NUMBER = '5534984479697';
 
-    // Footer WhatsApp CTA
+    function openWhatsApp(text) {
+      const msg = encodeURIComponent(text || 'Olá! Tenho interesse.');
+      const link = `https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`;
+      window.open(link, '_blank');
+    }
+    function openTelegram(text) {
+      const msg = encodeURIComponent(text || 'Olá! Tenho interesse.');
+      const share = 'https://t.me/share/url?url=' + encodeURIComponent(location.href) + '&text=' + msg;
+      window.open(share, '_blank');
+    }
+    function chooseChannel(rawText) {
+      const text = rawText || 'Olá! Tenho interesse.';
+      const isWhats = window.confirm('Enviar via WhatsApp? (Cancelar para Telegram)');
+      if (isWhats) openWhatsApp(text); else openTelegram(text);
+    }
+
+    // Footer CTA asks destination
     (function footerWhatsCTA(){
       const el = document.getElementById('footerWhats');
       if (!el) return;
-      const defaultMsg = encodeURIComponent('Olá! Quero fazer um orçamento.');
+      const defaultMsg = 'Olá! Quero fazer um orçamento.';
       el.addEventListener('click', function(e){
         e.preventDefault();
-        try {
-          const link = `https://wa.me/${WHATSAPP_NUMBER}?text=${defaultMsg}`;
-          window.open(link, '_blank');
-        } catch(_) {
-          window.open('https://wa.me/5534984479697?text='+defaultMsg, '_blank');
-        }
+        chooseChannel(defaultMsg);
       });
     })();
 
@@ -839,7 +850,7 @@
     })();
 
     // Contato → WhatsApp
-    const WHATSAPP_NUMBER = '5534984479697'; // número com DDI+DDD
+    // WHATSAPP_NUMBER já definido acima
 
     function buildMessage() {
       const message = document.getElementById('message').value.trim();
@@ -852,18 +863,15 @@
 
     document.getElementById('contactForm').addEventListener('submit', function (e) {
       e.preventDefault();
-      const texto = encodeURIComponent(buildMessage());
-      const link = `https://wa.me/${WHATSAPP_NUMBER}?text=${texto}`;
-      window.open(link, '_blank');
+      const text = buildMessage();
+      chooseChannel(text);
     });
 
     // WhatsApp FAB click → abre chat com mensagem padrão
     const whatsFab = document.getElementById('whatsFab');
     if (whatsFab) {
       whatsFab.addEventListener('click', () => {
-        const defaultMsg = encodeURIComponent('Olá, equipe Automatiza! Quero falar sobre um projeto.');
-        const link = `https://wa.me/${WHATSAPP_NUMBER}?text=${defaultMsg}`;
-        window.open(link, '_blank');
+        chooseChannel('Olá, equipe Automatiza! Quero falar sobre um projeto.');
       });
     }
   </script>
@@ -928,14 +936,12 @@
     const msg = $('#message'); if (msg) msg.placeholder = L.contact.placeholder;
 
     // Buttons in contact/footer
-    const btnSendWhats = document.querySelector('#contactForm button[type="submit"]');
-    if (btnSendWhats) btnSendWhats.textContent = L.contact.sendWhats;
-
-    const btnSendTg = $('#sendTelegram'); if (btnSendTg) btnSendTg.textContent = L.contact.sendTg;
+    const btnSendContact = $('#sendContact');
+    if (btnSendContact) btnSendContact.textContent = (L.contact.sendContact || 'Enviar mensagem');
 
     if ($('#footerCtaTitle')) $('#footerCtaTitle').textContent = L.footer.title;
     if ($('#footerCtaLead')) $('#footerCtaLead').textContent = L.footer.lead;
-    const fw = $('#footerWhats'); if (fw) fw.textContent = L.footer.whatsNow;
+    const fw = $('#footerWhats'); if (fw) fw.textContent = (L.footer.contactNow || L.footer.whatsNow || 'Enviar agora');
     const ftg = $('#footerTg'); if (ftg) ftg.textContent = L.footer.tgNow;
 
     // Title
@@ -965,11 +971,12 @@
       },
       contact: {
         messageLabel: 'Mensagem',
-        placeholder: 'Descreva em 2–3 linhas o que você precisa',
+        placeholder: 'Descreva em 2-3 linhas o que você precisa',
+        sendContact: 'Enviar mensagem',
         sendWhats: 'Enviar pelo WhatsApp',
         sendTg: 'Enviar pelo Telegram'
       },
-      footer: { title: 'Faça já seu orçamento', lead: 'Descreva seu projeto e receba em até 24h.', whatsNow: 'WhatsApp agora', tgNow: 'Telegram agora' }
+      footer: { title: 'Faça já seu orçamento', lead: 'Descreva seu projeto e receba em até 24h.', contactNow: 'Enviar agora', whatsNow: 'WhatsApp agora', tgNow: 'Telegram agora' }
     },
     es: {
       metaTitle: 'Automatiza — Software, Sitios y Automatización a medida',
@@ -992,11 +999,12 @@
       },
       contact: {
         messageLabel: 'Mensaje',
-        placeholder: 'Describe en 2–3 líneas lo que necesitas',
+        placeholder: 'Describe en 2-3 líneas lo que necesitas',
+        sendContact: 'Enviar mensaje',
         sendWhats: 'Enviar por WhatsApp',
         sendTg: 'Enviar por Telegram'
       },
-      footer: { title: 'Solicita tu presupuesto ahora', lead: 'Describe tu proyecto y recibe en hasta 24 h.', whatsNow: 'WhatsApp ahora', tgNow: 'Telegram ahora' }
+      footer: { title: 'Solicita tu presupuesto ahora', lead: 'Describe tu proyecto y recibe en hasta 24 h.', contactNow: 'Enviar ahora', whatsNow: 'WhatsApp ahora', tgNow: 'Telegram ahora' }
     },
     en: {
       metaTitle: 'Automatiza — Custom Software, Websites & Automation',
@@ -1019,11 +1027,12 @@
       },
       contact: {
         messageLabel: 'Message',
-        placeholder: 'Describe in 2–3 lines what you need',
+        placeholder: 'Describe in 2-3 lines what you need',
+        sendContact: 'Send message',
         sendWhats: 'Send via WhatsApp',
         sendTg: 'Send via Telegram'
       },
-      footer: { title: 'Get your quote now', lead: 'Describe your project and hear back within 24h.', whatsNow: 'WhatsApp now', tgNow: 'Telegram now' }
+      footer: { title: 'Get your quote now', lead: 'Describe your project and hear back within 24h.', contactNow: 'Contact now', whatsNow: 'WhatsApp now', tgNow: 'Telegram now' }
     }
   };
 
@@ -1038,11 +1047,7 @@
     });
   });
 
-  // Footer buttons open links
-  const fw = document.getElementById('footerWhats');
-  if (fw) {
-    fw.addEventListener('click', (e)=>{ e.preventDefault(); window.open(WHATSAPP, '_blank'); });
-  }
+  // Footer button handled earlier (chooseChannel)
   const ftg = document.getElementById('footerTg');
   if (ftg) {
     ftg.addEventListener('click', (e)=>{ 
@@ -1061,12 +1066,21 @@
     });
   }
 
-  // Contact form Telegram button
-  const btnSendTg = document.getElementById('sendTelegram');
-  if (btnSendTg) {
-    btnSendTg.addEventListener('click', ()=>{
-      const text = encodeURIComponent((document.getElementById('message')?.value || '').trim() || 'Olá! Tenho interesse.');
-      window.open(TELEGRAM_SHARE + text, '_blank');
+  // Contact button: ask destination
+  const btnSendContact = document.getElementById('sendContact');
+  if (btnSendContact) {
+    btnSendContact.addEventListener('click', ()=>{
+      const text = (document.getElementById('message')?.value || '').trim() || 'Olá! Tenho interesse.';
+      chooseChannel(text);
+    });
+  }
+
+  // Sticky CTA "EU QUERO!" opens choice
+  const btnBuy = document.querySelector('.auto-cta-footer .btn-buy');
+  if (btnBuy) {
+    btnBuy.addEventListener('click', (e)=>{
+      e.preventDefault();
+      chooseChannel('Olá! Quero fazer um orçamento.');
     });
   }
 
