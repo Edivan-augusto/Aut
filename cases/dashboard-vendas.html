@@ -1,0 +1,560 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '902194145304994');
+  fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Vendas - Tráfego Pago</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      html, body { max-width: 100%; overflow-x: hidden; }
+      img, svg { max-width: 100%; height: auto; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        header {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        header h1 {
+            margin: 0;
+            color: #2c3e50;
+            text-align: center;
+        }
+        /* Filters / Toolbar */
+        .filters-card { background: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 16px; margin-bottom: 20px; overflow: hidden; }
+        .filters-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .user { display: flex; gap: 12px; align-items: center; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #10b981); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .hello strong { display: block; color: #2c3e50; }
+        .hello small { color: #6b7280; }
+        .btn-reset { background: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 8px; color: #374151; padding: 8px 12px; cursor: pointer; }
+        .btn-reset:hover { background: #e5e7eb; }
+        .filters-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; }
+        .input-group { grid-column: span 3; background: #fafafa; border: 1px solid #f0f0f0; border-radius: 8px; padding: 12px; min-width: 0; }
+        .input-group label { display: block; font-size: 12px; color: #6b7280; margin-bottom: 6px; }
+        .date-row { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+        .date-row input[type="date"] {
+            width: 90%; min-width: 0; padding: 5px 8px; border: 1px solid #e5e7eb; border-radius: 6px;
+            height: 36px; font-size: .9rem; line-height: 1;
+        }
+        .date-row span { white-space: nowrap; color: #6b7280; align-self: flex-start; font-size: 12px; }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 6px; font-size: 14px; }
+        .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+        .chip { padding: 6px 10px; border-radius: 999px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 13px; }
+        .chip.active { background: #e6f4ff; border-color: #93c5fd; color: #1e3a8a; }
+        .range-row { display: flex; align-items: center; gap: 8px; }
+        .range-row input[type="range"] { width: 100%; }
+        @media (max-width: 1024px) { .input-group { grid-column: span 6; } }
+        @media (max-width: 720px) { .checkbox-group label { flex: 1 1 calc(50% - 8px); } }
+        @media (max-width: 640px) { 
+            .filters-grid { grid-template-columns: 1fr; gap: 10px; }
+            .input-group { grid-column: 1 / -1; padding: 10px; }
+            .checkbox-group label { flex: 1 1 100%; }
+            .chips { gap: 6px; }
+            .chip { padding: 6px 10px; font-size: 12px; }
+        }
+        @media (max-width: 420px) {
+            .date-row { flex-direction: column; align-items: stretch; gap: 6px; }
+            .date-row span { align-self: flex-start; }
+        }
+        @media (max-width: 480px) {
+            .filters-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .btn-reset { width: 100%; }
+            .avatar { width: 30px; height: 30px; font-size: 12px; }
+        }
+        .kpi-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .kpi-card {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .kpi-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+        .kpi-card p {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+         .chart-container {
+             background-color: #fff;
+             padding: 20px;
+             border-radius: 8px;
+             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+             margin-bottom: 20px;
+             position: relative;
+             min-height: 280px;
+         }
+         .chart-container canvas { height: 100% !important; width: 100% !important; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        @media (min-width: 768px) { .chart-container { min-height: 340px; } }
+        @media (min-width: 1024px) { .charts-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; } .chart-container { min-height: 380px; } }
+        @media (min-width: 1280px) { .chart-container { min-height: 420px; } }
+
+        @media (max-width: 768px) { .charts-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 480px) { .kpi-card p { font-size: 22px; } }
+        /* Table */
+        .table-container { background: #fff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); overflow-x: auto; overflow-y: hidden; margin-top: 12px; }
+        .table { width: 100%; border-collapse: collapse; min-width: 720px; }
+        .table thead { background: #f8fafc; color: #475569; }
+        .table th, .table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #eef2f7; font-size: 14px; }
+        .table tbody tr:hover { background: #f9fbff; }
+    </style>
+</head>
+<body>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=902194145304994&ev=PageView&noscript=1" /></noscript>
+
+    <div class="container">
+        <header>
+            <h1>Dashboard de Análise de Vendas por Tráfego Pago</h1>
+        </header>
+
+        <section class="filters-card" aria-label="Filtros do Painel">
+            <div class="filters-header">
+                <div class="user">
+                    <div class="avatar" id="avatar">VP</div>
+                    <div class="hello">
+                        <strong>Bem-vindo(a),</strong>
+                        <small id="periodLabel">Últimos 30 dias</small>
+                    </div>
+                </div>
+                <button id="resetBtn" class="btn-reset" type="button">Limpar filtros</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="input-group">
+                    <label>Período</label>
+                    <div class="date-row">
+                        <input type="date" id="startDate"/>
+                        <span>até</span>
+                        <input type="date" id="endDate"/>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Plataformas</label>
+                    <div class="checkbox-group" id="platformChecks">
+                        <label><input type="checkbox" class="plf" value="Google Ads" checked> Google Ads</label>
+                        <label><input type="checkbox" class="plf" value="Facebook Ads" checked> Facebook Ads</label>
+                        <label><input type="checkbox" class="plf" value="Instagram Ads" checked> Instagram Ads</label>
+                        <label><input type="checkbox" class="plf" value="TikTok Ads" checked> TikTok Ads</label>
+                        <label><input type="checkbox" class="plf" value="Taboola" checked> Taboola</label>
+                    </div>
+                </div>
+                <div class="input-group" style="grid-column: span 3;">
+                    <label>Campanhas</label>
+                    <div id="campaignChips" class="chips" role="listbox" aria-label="Filtro de campanhas"></div>
+                </div>
+                <div class="input-group">
+                    <label>Limites (CPA máx.)</label>
+                    <div class="range-row">
+                        <span>R$ <span id="cpaVal">500</span></span>
+                        <input type="range" id="cpaMax" min="0" max="500" step="10" value="500"/>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>Total de Vendas</h3>
+                <p id="totalVendas">R$ 0,00</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Custo por Clique (CPC)</h3>
+                <p id="cpcMedio">R$ 0,00</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Custo por Aquisição (CPA)</h3>
+                <p id="cpaMedio">R$ 0,00</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Retorno (ROI)</h3>
+                <p id="roi">0%</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <canvas id="vendasPorCanal"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="evolucaoVendas"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="distribuicaoVendas"></canvas>
+            </div>
+             <div class="chart-container">
+                <canvas id="custoPorPlataforma"></canvas>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table" id="tableRecent">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Plataforma</th>
+                        <th>Campanha</th>
+                        <th>Cliques</th>
+                        <th>Conversões</th>
+                        <th>Custo</th>
+                        <th>Receita</th>
+                        <th>CPA</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    
+
+    <script>
+        // Utilitários
+        const BRL = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+        const fmtBRL = (n) => BRL.format(n || 0);
+        const pad = (n) => String(n).padStart(2, '0');
+        const toDateKey = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+        // RNG determinístico para dados estáveis
+        let seed = 42;
+        function rand() { seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+
+        const PLATFORMS = ['Google Ads','Facebook Ads','Instagram Ads','TikTok Ads','Taboola'];
+        const CAMPAIGNS = ['Campanha A','Campanha B','Campanha C','Campanha D','Campanha E'];
+
+        function generateData(days = 90) {
+            const today = new Date();
+            const start = new Date(today); start.setDate(start.getDate() - (days - 1));
+            const rows = [];
+            for (let i = 0; i < days; i++) {
+                const d = new Date(start); d.setDate(start.getDate() + i);
+                for (const p of PLATFORMS) {
+                    const nCampaigns = 1 + Math.floor(rand() * 2);
+                    const picks = new Set();
+                    while (picks.size < nCampaigns) picks.add(CAMPAIGNS[Math.floor(rand() * CAMPAIGNS.length)]);
+                    for (const c of picks) {
+                        const volBase = { 'Google Ads': 700, 'Facebook Ads': 500, 'Instagram Ads': 380, 'TikTok Ads': 220, 'Taboola': 120 }[p] || 300;
+                        const clicks = Math.max(40, Math.round(volBase * (0.7 + rand()*0.8)));
+                        const cpcBase = { 'Google Ads': 1.8, 'Facebook Ads': 1.4, 'Instagram Ads': 1.2, 'TikTok Ads': 0.9, 'Taboola': 0.8 }[p] || 1.0;
+                        const cost = +(clicks * cpcBase * (0.85 + rand()*0.4)).toFixed(2);
+                        const cvr = { 'Campanha A': 0.025, 'Campanha B': 0.02, 'Campanha C': 0.018, 'Campanha D': 0.015, 'Campanha E': 0.012 }[c] || 0.017;
+                        const conv = Math.round(clicks * cvr * (0.8 + rand()*0.6));
+                        const ticket = { 'Campanha A': 520, 'Campanha B': 450, 'Campanha C': 600, 'Campanha D': 400, 'Campanha E': 350 }[c] || 420;
+                        const revenue = +(conv * ticket * (0.9 + rand()*0.3)).toFixed(2);
+                        rows.push({ date: new Date(d), platform: p, campaign: c, clicks, cost, conv, revenue });
+                    }
+                }
+            }
+            return rows;
+        }
+
+        const ALL_DATA = generateData(90);
+
+        // Referências de filtros e rótulos
+        const startEl = document.getElementById('startDate');
+        const endEl = document.getElementById('endDate');
+        const cpaEl = document.getElementById('cpaMax');
+        const cpaValEl = document.getElementById('cpaVal');
+        const periodLabel = document.getElementById('periodLabel');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function setDefaultDates() {
+            const today = new Date();
+            const start = new Date(); start.setDate(today.getDate() - 29);
+            const toInput = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+            startEl.value = toInput(start);
+            endEl.value = toInput(today);
+        }
+
+        function getSelectedPlatforms() {
+            return Array.from(document.querySelectorAll('.plf:checked')).map(i => i.value);
+        }
+        function getSelectedCampaigns() {
+            const chips = Array.from(document.querySelectorAll('#campaignChips .chip.active'));
+            return chips.length ? chips.map(c => c.dataset.val) : [];
+        }
+        function getDateRange() {
+            const s = startEl.value ? new Date(startEl.value + 'T00:00:00') : null;
+            const e = endEl.value ? new Date(endEl.value + 'T23:59:59') : null;
+            return { start: s, end: e };
+        }
+
+        function applyFilters(rows) {
+            const platforms = new Set(getSelectedPlatforms());
+            const campaigns = new Set(getSelectedCampaigns());
+            const { start, end } = getDateRange();
+            const cpaMax = Number(cpaEl.value || 500);
+            return rows.filter(r => {
+                if (platforms.size && !platforms.has(r.platform)) return false;
+                if (campaigns.size && !campaigns.has(r.campaign)) return false;
+                if (start && r.date < start) return false;
+                if (end && r.date > end) return false;
+                const cpa = r.conv > 0 ? (r.cost / r.conv) : Infinity;
+                if (cpa > cpaMax) return false;
+                return true;
+            });
+        }
+
+        function aggregate(rows) {
+            const totals = rows.reduce((acc, r) => { acc.cost += r.cost; acc.clicks += r.clicks; acc.conv += r.conv; acc.revenue += r.revenue; return acc; }, { cost: 0, clicks: 0, conv: 0, revenue: 0 });
+            const byPlatform = {}; const byDate = {}; const byCampaign = {};
+            for (const r of rows) {
+                byPlatform[r.platform] ||= { revenue: 0, cost: 0 }; byPlatform[r.platform].revenue += r.revenue; byPlatform[r.platform].cost += r.cost;
+                const k = toDateKey(r.date); byDate[k] ||= { revenue: 0, cost: 0 }; byDate[k].revenue += r.revenue; byDate[k].cost += r.cost;
+                byCampaign[r.campaign] ||= 0; byCampaign[r.campaign] += r.revenue;
+            }
+            return { totals, byPlatform, byDate, byCampaign };
+        }
+
+        function populateCampaigns() {
+            const box = document.getElementById('campaignChips');
+            box.innerHTML = '';
+            const unique = Array.from(new Set(ALL_DATA.map(r => r.campaign))).sort();
+            const hint = document.createElement('span');
+            hint.style.cssText = 'color:#6b7280;font-size:12px;margin-right:8px;align-self:center;';
+            hint.textContent = 'Selecione campanhas (opcional):';
+            box.appendChild(hint);
+            for (const c of unique) {
+                const b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = c; b.dataset.val = c;
+                b.addEventListener('click', () => { b.classList.toggle('active'); updateUI(); });
+                box.appendChild(b);
+            }
+        }
+
+        // Preparar gráficos
+        const ctxVendasCanal = document.getElementById('vendasPorCanal').getContext('2d');
+        const ctxEvolucaoVendas = document.getElementById('evolucaoVendas').getContext('2d');
+        const ctxDistribuicaoVendas = document.getElementById('distribuicaoVendas').getContext('2d');
+        const ctxCustoPlataforma = document.getElementById('custoPorPlataforma').getContext('2d');
+
+        // Plugin para mensagem de 'Sem dados'
+        const NoDataPlugin = { id: 'noData', afterDraw(chart) {
+            const ds = chart.data && chart.data.datasets && chart.data.datasets[0];
+            const data = ds && Array.isArray(ds.data) ? ds.data : [];
+            const has = data.some(v => (typeof v === 'number' ? v : 0) > 0);
+            if (has) return;
+            const { ctx, chartArea } = chart;
+            if (!chartArea) return;
+            ctx.save();
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '600 14px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sem dados para o período', (chartArea.left + chartArea.right) / 2, (chartArea.top + chartArea.bottom) / 2);
+            ctx.restore();
+        }};
+
+        Chart.register(NoDataPlugin);
+
+        const currency = (v) => 'R$ ' + Number(v||0).toLocaleString('pt-BR');
+
+        const chartPlatformRevenue = new Chart(ctxVendasCanal, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Receita (R$)', data: [], backgroundColor: 'rgba(59,130,246,0.6)', borderColor: 'rgba(59,130,246,1)', borderWidth: 1 }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Receita por Plataforma' },
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${currency(ctx.parsed.y)}` } }
+                },
+                layout: { padding: 6 },
+                scales: {
+                    x: { ticks: { autoSkip: true, maxRotation: 0 }, grid: { display: false } },
+                    y: { beginAtZero: true, ticks: { callback: (v) => currency(v) } }
+                }
+            }
+        });
+
+        const chartTrend = new Chart(ctxEvolucaoVendas, {
+            type: 'line',
+            data: { labels: [], datasets: [
+                { label: 'Receita', data: [], borderColor: 'rgba(16,185,129,1)', backgroundColor: 'rgba(16,185,129,0.2)', fill: false, tension: 0.2 },
+                { label: 'Custo', data: [], borderColor: 'rgba(239,68,68,1)', backgroundColor: 'rgba(239,68,68,0.15)', fill: false, tension: 0.2 }
+            ]},
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Evolução (Receita x Custo)' },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${currency(ctx.parsed.y)}` } }
+                },
+                interaction: { mode: 'index', intersect: false },
+                elements: { point: { radius: 2 } },
+                scales: { y: { ticks: { callback: (v) => currency(v) } } }
+            }
+        });
+
+        const chartCampaignPie = new Chart(ctxDistribuicaoVendas, {
+            type: 'doughnut',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: ['#60a5fa','#34d399','#fbbf24','#f87171','#a78bfa','#f472b6','#4ade80'] }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Participação por Campanha' },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${currency(ctx.parsed)} (${(ctx.parsed / ctx.dataset.data.reduce((a,b)=>a+ b,0) * 100 || 0).toFixed(1)}%)` } }
+                }
+            }
+        });
+
+        const chartPlatformCost = new Chart(ctxCustoPlataforma, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Custo (R$)', data: [], backgroundColor: 'rgba(239,68,68,0.5)', borderColor: 'rgba(239,68,68,1)' }] },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Custo por Plataforma' },
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: (ctx) => `${ctx.dataset.label}: ${currency(ctx.parsed.x)}` } }
+                },
+                scales: { x: { ticks: { callback: (v) => currency(v) } }, y: { ticks: { autoSkip: true } } }
+            }
+        });
+
+        function updateKpis(t) {
+            document.getElementById('totalVendas').textContent = fmtBRL(t.revenue);
+            const cpc = t.clicks > 0 ? t.cost / t.clicks : 0; document.getElementById('cpcMedio').textContent = fmtBRL(cpc);
+            const cpa = t.conv > 0 ? (t.cost / t.conv) : 0; document.getElementById('cpaMedio').textContent = t.conv > 0 ? fmtBRL(cpa) : '—';
+            const roi = t.cost > 0 ? ((t.revenue - t.cost) / t.cost) * 100 : 0; document.getElementById('roi').textContent = `${roi.toFixed(1)}%`;
+        }
+
+        function updateCharts(agg) {
+            const pLabels = Object.keys(agg.byPlatform); const pRevenue = pLabels.map(k => +(agg.byPlatform[k].revenue.toFixed(2))); const pCost = pLabels.map(k => +(agg.byPlatform[k].cost.toFixed(2)));
+            chartPlatformRevenue.data.labels = pLabels; chartPlatformRevenue.data.datasets[0].data = pRevenue; chartPlatformRevenue.update();
+            const dLabels = Object.keys(agg.byDate).sort(); const dRevenue = dLabels.map(k => +(agg.byDate[k].revenue.toFixed(2))); const dCost = dLabels.map(k => +(agg.byDate[k].cost.toFixed(2)));
+            chartTrend.data.labels = dLabels; chartTrend.data.datasets[0].data = dRevenue; chartTrend.data.datasets[1].data = dCost; chartTrend.update();
+            const cLabels = Object.keys(agg.byCampaign); const cValues = cLabels.map(k => +(agg.byCampaign[k].toFixed(2)));
+            chartCampaignPie.data.labels = cLabels; chartCampaignPie.data.datasets[0].data = cValues; chartCampaignPie.update();
+            chartPlatformCost.data.labels = pLabels; chartPlatformCost.data.datasets[0].data = pCost; chartPlatformCost.update();
+        }
+
+        function updateTable(rows) {
+            const tbody = document.querySelector('#tableRecent tbody'); tbody.innerHTML = '';
+            const sorted = [...rows].sort((a,b)=>b.date-a.date).slice(0, 12);
+            for (const r of sorted) {
+                const tr = document.createElement('tr'); const cpa = r.conv > 0 ? (r.cost / r.conv) : Infinity;
+                tr.innerHTML = `
+                    <td>${toDateKey(r.date)}</td>
+                    <td>${r.platform}</td>
+                    <td>${r.campaign}</td>
+                    <td>${r.clicks.toLocaleString('pt-BR')}</td>
+                    <td>${r.conv.toLocaleString('pt-BR')}</td>
+                    <td>${fmtBRL(r.cost)}</td>
+                    <td>${fmtBRL(r.revenue)}</td>
+                    <td>${isFinite(cpa) ? fmtBRL(cpa) : '—'}</td>
+                `; tbody.appendChild(tr);
+            }
+        }
+
+        function updatePeriodLabel() {
+            const { start, end } = getDateRange(); if (!start || !end) { periodLabel.textContent = 'Período personalizado'; return; }
+            const f = (d) => `${pad(d.getDate())}/${pad(d.getMonth()+1)}`; periodLabel.textContent = `${f(start)} até ${f(end)}`;
+        }
+
+        function updateUI() {
+            cpaValEl.textContent = Number(cpaEl.value).toLocaleString('pt-BR');
+            const filtered = applyFilters(ALL_DATA); const agg = aggregate(filtered);
+            updateKpis(agg.totals); updateCharts(agg); updateTable(filtered); updatePeriodLabel();
+        }
+
+        function attachEvents() {
+            startEl.addEventListener('change', updateUI); endEl.addEventListener('change', updateUI); cpaEl.addEventListener('input', updateUI);
+            document.getElementById('platformChecks').addEventListener('change', updateUI);
+            resetBtn.addEventListener('click', () => {
+                setDefaultDates(); document.querySelectorAll('.plf').forEach(ch => ch.checked = true); cpaEl.value = 500; cpaValEl.textContent = '500';
+                document.querySelectorAll('#campaignChips .chip').forEach(c => c.classList.remove('active'));
+                updateUI();
+            });
+        }
+
+        // Inicialização
+        setDefaultDates(); populateCampaigns(); attachEvents(); updateUI();
+    </script>
+
+    <style>
+      body { padding-bottom: 96px; }
+      /* Footer CTA – estilo alinhado ao tema neon roxo/ciano (glass) */
+      .auto-cta-footer { background:#0b1b2d; color:#ffffff; border-top:1px solid #232336; position:fixed; left:0; right:0; bottom:0; z-index:9999; box-shadow: 0 -6px 18px rgba(0,0,0,.25); }
+      .auto-cta-footer .inner { max-width: 1200px; margin:0 auto; padding: 18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+      .auto-cta-footer .brand { font-weight:700; letter-spacing:.2px; color:#00eaff; }
+      .auto-cta-footer .msg { opacity:.9; }
+      .auto-cta-footer .actions { display:flex; gap:10px; align-items:center; }
+      .auto-cta-footer .btn-buy {
+        color:#ffffff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800;
+        background: linear-gradient(180deg, rgba(155,92,255,.18), rgba(155,92,255,.10));
+        border:1px solid rgba(155,92,255,.45);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 24px rgba(155,92,255,.25);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      }
+      .auto-cta-footer .btn-buy:hover { background: linear-gradient(180deg, rgba(155,92,255,.26), rgba(155,92,255,.14)); }
+      .auto-cta-footer .btn-back {
+        background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+        color: #00eaff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid rgba(0,234,255,.45);
+        box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(0,234,255,.16);
+        backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      }
+      .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
+      @media (max-width: 560px){
+        body { padding-bottom: 68px; }
+        .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; padding: 10px 14px; }
+        .auto-cta-footer .actions{ width:100%; flex-direction:row; align-items:stretch; gap: 8px; }
+        .auto-cta-footer .actions a{ flex: 1 1 0; text-align:center; }
+        .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
+      }
+    </style>
+    <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">
+      <div class="inner">
+        <div>
+          <div class="brand">Automatiza</div>
+          <div class="msg">Gostou deste exemplo? Transforme sua ideia em realidade.</div>
+        </div>
+        <div class="actions">
+          <a class="btn-back" href="#" onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='../index.html';">Voltar</a>
+          <a class="btn-buy" href="https://wa.me/5534998878515?text=Quero%20comprar%20agora%20(Automatiza)" target="_blank" rel="noopener">EU QUERO!</a>
+        </div>
+      </div>
+    </div>
+</body>
+</html>
+
+
+

@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '902194145304994');
+  fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Automatiza • Tech Graphite Charts</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <!-- Biblioteca de gráficos pinada -->
+  <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=902194145304994&ev=PageView&noscript=1" /></noscript>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <strong id="botNameDisplay">Meu Robô</strong> <span class="tag" id="hdrSymbol">BTCUSDT</span> <span class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Sincronizado</span></span>
+    </div>
+    <div class="controls">
+      <label>Par:
+        <select id="symbol">
+          <option>BTCUSDT</option>
+          <option>ETHUSDT</option>
+          <option>SOLUSDT</option>
+          <option>BNBUSDT</option>
+          <option>ADAUSDT</option>
+          <option>XRPUSDT</option>
+        </select>
+      </label>
+      <label>Estratégia:
+        <select id="strategy">
+          <option value="trend">Trend Following</option>
+          <option value="rsi">RSI</option>
+          <option value="breakout">Breakout</option>
+        </select>
+      </label>
+      <label>Intervalo:
+        <select id="interval">
+          <option value="1m">1m</option>
+          <option value="5m">5m</option>
+          <option value="15m">15m</option>
+          <option value="1h">1h</option>
+          <option value="4h">4h</option>
+          <option value="1d">1d</option>
+        </select>
+      </label>
+      <button id="reload" title="Recarregar histórico">↻</button>
+      <span class="poll">⏱ Atualiza a cada <b>5s</b></span>
+    </div>
+  </header>
+
+  <main class="grid">
+    <section class="panel col-span-2">
+      <h2>Preço • Candles</h2>
+      <div id="chartArea" class="chart"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Resumo (Demo)</h2>
+        <div class="pills">
+          <span class="pill" id="pillStrategy">Trend Following</span>
+          <span class="pill" id="pillMode">Demo OFF</span>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat"><small>Saldo</small><strong id="equity">$10.000,00</strong></div>
+        <div class="stat"><small>PNL Realizado</small><strong id="pnlReal">$0,00</strong></div>
+        <div class="stat"><small>PNL em Andamento</small><strong id="pnlUnreal">$0,00</strong></div>
+        <div class="stat"><small>Última atualização</small><strong id="lastUpdate">—</strong></div>
+      </div>
+      <div class="position" id="positionBox" aria-live="polite">Sem posição aberta</div>
+      <div class="actions-row"><button id="closePositionBtn" class="ghost" disabled>Zerar Posição (Demo)</button></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Preferências do Robô</h2>
+      </div>
+      <form class="pref-form" onsubmit="return false;">
+        <div class="field">
+          <label for="botName">Nome do Robô</label>
+          <input id="botName" type="text" placeholder="Ex.: Thor, Hera..." maxlength="30" />
+        </div>
+        <div class="field">
+          <label for="risk">Risco por trade</label>
+          <select id="risk">
+            <option value="0.01">1%</option>
+            <option value="0.02" selected>2%</option>
+            <option value="0.05">5%</option>
+          </select>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Robô de Sinais (demo)</h2>
+        <label class="switch">
+          <input id="demoToggle" type="checkbox">
+          <span class="slider"></span>
+          <span class="switch-label">Ativar</span>
+        </label>
+      </div>
+      <p class="muted">Gera <em>sinais aleatórios</em> (compra/venda) apenas para demonstração visual. Não é recomendação.</p>
+      <div id="signals" class="signals"></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div>Dados via <a href="https://binance-docs.github.io/apidocs/spot/en/#kline-candlestick-data" target="_blank" rel="noopener">Binance API pública</a>. Polling de 5s. Conteúdo educativo.</div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+
+  <!-- Footer CTA fixo -->
+  <style>
+    body { padding-bottom: 96px; }
+    .auto-cta-footer { background:#0b1b2d; color:#ffffff; border-top:1px solid #232336; position:fixed; left:0; right:0; bottom:0; z-index:9999; box-shadow: 0 -6px 18px rgba(0,0,0,.25); }
+    .auto-cta-footer .inner { max-width: 1100px; margin:0 auto; padding: 18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .auto-cta-footer .brand { font-weight:700; letter-spacing:.2px; color:#00eaff; }
+    .auto-cta-footer .msg { opacity:.9; }
+    .auto-cta-footer .actions { display:flex; gap:10px; align-items:center; }
+    .auto-cta-footer .btn-buy {
+      color:#ffffff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800;
+      background: linear-gradient(180deg, rgba(155,92,255,.18), rgba(155,92,255,.10));
+      border:1px solid rgba(155,92,255,.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 24px rgba(155,92,255,.25);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .auto-cta-footer .btn-buy:hover { background: linear-gradient(180deg, rgba(155,92,255,.26), rgba(155,92,255,.14)); }
+    .auto-cta-footer .btn-back {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      color: #00eaff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid rgba(0,234,255,.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(0,234,255,.16);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
+    @media (max-width: 560px){
+      body { padding-bottom: 68px; }
+      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; padding: 10px 14px; }
+      .auto-cta-footer .actions{ width:100%; flex-direction:row; align-items:stretch; gap: 8px; }
+      .auto-cta-footer .actions a{ flex:1 1 0; text-align:center; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
+    }
+  </style>
+
+  <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">
+    <div class="inner">
+      <div>
+        <div class="brand">Automatiza</div>
+        <div class="msg">Pronto para construir seu robô de trading?</div>
+      </div>
+      <div class="actions">
+        <a class="btn-back" href="#" onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='../index.html';">Voltar</a>
+        <a class="btn-buy" href="https://wa.me/5534998878515?text=Quero%20comprar%20agora%20(Automatiza)" target="_blank" rel="noopener">EU QUERO!</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+

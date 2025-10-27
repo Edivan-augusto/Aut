@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '902194145304994');
+  fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Web Scraping</title>
+    <style>
+        html, body { max-width: 100%; overflow-x: hidden; }
+        img, svg { max-width: 100%; height: auto; }
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        @media (max-width: 560px){
+            .container { padding: 16px; }
+            .scraper-form { flex-direction: column; }
+            #scrapeButton { width: 100%; padding: 14px; }
+            .results-area { min-height: 200px; padding: 14px; }
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            color: #7f8c8d;
+        }
+
+        .scraper-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #userInput {
+            flex-grow: 1;
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        #userInput:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        #scrapeButton {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px; /* mais grosso */
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            line-height: 1;
+        }
+
+        #scrapeButton:hover {
+            background-color: #0056b3;
+        }
+        
+        #scrapeButton:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .results-area {
+            background-color: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 20px;
+            color: #f4f4f4;
+            font-family: 'Roboto Mono', monospace;
+            min-height: 300px;
+            overflow-y: auto;
+        }
+        
+        #status {
+            color: #f0ad4e; /* Amarelo/Laranja para status */
+            margin-bottom: 15px;
+        }
+        
+        .result-item {
+            border-bottom: 1px dashed #555;
+            padding: 10px 0;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-item strong {
+            color: #56c2e8; /* Azul claro para o nome do repo */
+        }
+        
+        .result-item a {
+            color: #90ee90; /* Verde claro para links */
+            text-decoration: none;
+            word-break: break-all;
+        }
+        
+        .result-item a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=902194145304994&ev=PageView&noscript=1" /></noscript>
+
+    <div class="container">
+        <header>
+            <h1>Simulador de Web Scraping</h1>
+            <p>Extraindo nomes de repositórios públicos do GitHub via API.</p>
+        </header>
+
+        <div class="scraper-form">
+            <input type="text" id="userInput" value="google" placeholder="Digite um usuário do GitHub (ex: microsoft)">
+            <button id="scrapeButton">Extrair Dados</button>
+        </div>
+
+        <div class="results-area">
+            <pre id="status">Aguardando comando para iniciar a extração...</pre>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const userInput = document.getElementById('userInput');
+        const scrapeButton = document.getElementById('scrapeButton');
+        const statusElement = document.getElementById('status');
+        const resultsContainer = document.getElementById('results');
+
+        // Adiciona um listener para o botão de "Extrair"
+        scrapeButton.addEventListener('click', async () => {
+            const username = userInput.value.trim();
+            if (!username) {
+                updateStatus('Erro: Por favor, insira um nome de usuário.', 'error');
+                return;
+            }
+
+            // Desabilita o botão e limpa resultados antigos
+            toggleLoading(true);
+            resultsContainer.innerHTML = '';
+
+            try {
+                // 1. REQUISIÇÃO: Monta a URL da API e faz a chamada
+                updateStatus(`[1/3] Conectando à API do GitHub para o usuário "${username}"...`);
+                const apiUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=10`;
+                
+                // O `fetch` é a ferramenta principal para fazer requisições web em JS
+                const response = await fetch(apiUrl);
+
+                // Verifica se a resposta da requisição foi bem-sucedida
+                if (!response.ok) {
+                    throw new Error(`Não foi possível encontrar o usuário ou houve um erro na rede. Status: ${response.status}`);
+                }
+                
+                // Converte a resposta em formato JSON (um formato de dados padrão na web)
+                const data = await response.json();
+
+                // 2. EXTRAÇÃO: Processa os dados recebidos
+                updateStatus(`[2/3] Dados recebidos! Extraindo nomes e links de ${data.length} repositórios...`);
+                
+                if (data.length === 0) {
+                     updateStatus(`[3/3] O usuário "${username}" não possui repositórios públicos.`);
+                     toggleLoading(false);
+                     return;
+                }
+                
+                // Cria o HTML para exibir os resultados
+                const resultsHTML = data.map(repo => {
+                    // Para cada item (repo) na lista de dados, extraímos o nome e o link
+                    const repoName = repo.name;
+                    const repoUrl = repo.html_url;
+                    
+                    // Retornamos um bloco de HTML formatado
+                    return `
+                        <div class="result-item">
+                            <strong>Repositório:</strong> ${repoName}<br>
+                            <strong>URL:</strong> <a href="${repoUrl}" target="_blank">${repoUrl}</a>
+                        </div>
+                    `;
+                }).join(''); // O .join junta todos os blocos de HTML em um único texto
+
+                // 3. EXIBIÇÃO: Mostra os resultados na tela
+                updateStatus(`[3/3] Extração concluída com sucesso!`);
+                resultsContainer.innerHTML = resultsHTML;
+
+            } catch (error) {
+                // Trata possíveis erros durante o processo
+                updateStatus(`Erro na extração: ${error.message}`, 'error');
+            } finally {
+                // Reabilita o botão ao final do processo
+                toggleLoading(false);
+            }
+        });
+        
+        function updateStatus(message) {
+            statusElement.textContent = message;
+        }
+        
+        function toggleLoading(isLoading) {
+             scrapeButton.disabled = isLoading;
+             scrapeButton.textContent = isLoading ? 'Extraindo...' : 'Extrair Dados';
+        }
+
+    </script>
+  <style>
+    body { padding-bottom: 96px; }
+    /* Footer CTA – estilo alinhado ao tema neon roxo/ciano (glass) */
+    .auto-cta-footer { background:#0b1b2d; color:#ffffff; border-top:1px solid #232336; position:fixed; left:0; right:0; bottom:0; z-index:9999; box-shadow: 0 -6px 18px rgba(0,0,0,.25); }
+    .auto-cta-footer .inner { max-width: 1100px; margin:0 auto; padding: 18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .auto-cta-footer .brand { font-weight:700; letter-spacing:.2px; color:#00eaff; }
+    .auto-cta-footer .msg { opacity:.9; }
+    .auto-cta-footer .actions { display:flex; gap:10px; align-items:center; }
+    .auto-cta-footer .btn-buy {
+      color:#ffffff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800;
+      background: linear-gradient(180deg, rgba(155,92,255,.18), rgba(155,92,255,.10));
+      border:1px solid rgba(155,92,255,.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 24px rgba(155,92,255,.25);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .auto-cta-footer .btn-buy:hover { background: linear-gradient(180deg, rgba(155,92,255,.26), rgba(155,92,255,.14)); }
+    .auto-cta-footer .btn-back {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      color: #00eaff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid rgba(0,234,255,.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(0,234,255,.16);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
+    @media (max-width: 560px){
+      body { padding-bottom: 68px; }
+      .auto-cta-footer .inner{ flex-direction:column; align-items:flex-start; padding: 10px 14px; }
+      .auto-cta-footer .actions{ width:100%; flex-direction:row; align-items:stretch; gap: 8px; }
+      .auto-cta-footer .actions a{ flex: 1 1 0; text-align:center; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
+    }
+  </style>
+  <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">
+    <div class="inner">
+      <div>
+        <div class="brand">Automatiza</div>
+        <div class="msg">Curtiu este scraper? Vamos automatizar seu processo.</div>
+      </div>
+      <div class="actions">
+        <a class="btn-back" href="#" onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='../index.html';">Voltar</a>
+          <a class="btn-buy" href="https://wa.me/5534998878515?text=Quero%20comprar%20agora%20(Automatiza)" target="_blank" rel="noopener">EU QUERO!</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

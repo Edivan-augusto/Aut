@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-br" data-theme="dark">
+<head>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '902194145304994');
+  fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Automatiza - Planilha Inteligente</title>
+
+  <!-- Handsontable CSS (via CDN) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@16.1.1/styles/handsontable.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/handsontable@16.1.1/styles/ht-theme-main.min.css" />
+
+  <style>
+    html, body { max-width: 100%; overflow-x: hidden; }
+    img, svg { max-width: 100%; height: auto; }
+    :root { --bg:#ffffff; --fg:#222; --accent:#00bf8f; --accent2:#3d5afe; --muted:#6b7280; }
+    body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,Segoe UI,Roboto,Ubuntu,Arial; padding-bottom:96px }
+    header{display:flex;gap:.5rem;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #1f634e;background:linear-gradient(90deg,#0f4d3f,#0a3f34);position:sticky;top:0;z-index:5;color:#e6f3ef}
+    .brand{display:flex;align-items:center;gap:.6rem;font-weight:700;letter-spacing:.2px;color:#e6f3ef}
+    .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+    .buttons{display:flex;gap:.6rem;flex-wrap:nowrap}
+    .buttons button{flex:0 0 auto; white-space:nowrap}
+    button{border:1px solid #1f634e;background:#0f221d;color:#e6f3ef;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600}
+    button:hover{border-color:#2aa37e;box-shadow:0 0 0 2px #2aa37e33}
+    button.primary{background:linear-gradient(90deg,#00bf8f,#00a77d);color:#07251e;border-color:#00bf8f}
+    main{padding:12px;max-width:1100px;margin:0 auto}
+    #hot{height:420px}
+    .panel{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+    /* Cards agora claros/coerentes com o fundo branco */
+    .card{border:1px solid #e7e7e9;background:#ffffff;border-radius:12px;padding:12px 14px;color:var(--fg);box-shadow:0 2px 12px rgba(0,0,0,.04)}
+    .card b{color:#0f4d3f}
+    .log{white-space:pre-wrap;font-family:ui-monospace,Consolas,Menlo,monospace;font-size:12px;max-height:160px;overflow:auto;color:#111827}
+    .hint{opacity:.95;color:#374151}
+    /* Estilo para destacar a linha de Subtotal e descontos aplicados */
+    .subtotal-row{font-weight:700;background:#f2fbf7 !important;border-top:2px solid #1f634e}
+    .htDimmed{color:#3b7767}
+    /* Ajustes do tema da HOT para simular Excel (fundo branco) */
+    .handsontable.ht-theme-main .htCore td, 
+    .handsontable.ht-theme-main .htCore th { background:#ffffff; color:#222; border-color:#e7e7e9}
+    /* Ajuste das variáveis do tema para evitar bordas pretas em linhas novas */
+    .ht-theme-main{
+      --ht-cell-horizontal-border-color:#e7e7e9;
+      --ht-cell-vertical-border-color:#e7e7e9;
+      --ht-wrapper-border-color:#e7e7e9;
+      --ht-row-header-odd-background-color:#f7f7f9;
+      --ht-row-header-even-background-color:#f7f7f9;
+      --ht-background-color:#ffffff;
+      --ht-foreground-color:#222;
+    }
+    /* Wrapper com scroll para responsividade em celulares */
+    .sheet-scroll{ overflow:auto; -webkit-overflow-scrolling:touch; border:1px solid #e7e7e9; border-radius:12px; background:#fff }
+    .sheet-scroll::-webkit-scrollbar{ height:10px; width:10px }
+    .sheet-scroll::-webkit-scrollbar-thumb{ background:#cfcfd4; border-radius:8px }
+    #hot{ min-width:680px }
+    @media (max-width: 640px){
+      #hot{ min-width:560px; height:60vh }
+      header{ flex-direction:column; align-items:stretch; gap:8px }
+      /* Mantém os botões lado a lado no mobile */
+      .buttons{ width:100%; flex-wrap:wrap; overflow-x:visible }
+      .buttons button{ padding:6px 10px; font-size:12px; flex:1 1 calc(50% - 6px) }
+    }
+    .handsontable.ht-theme-main .ht__highlight, 
+    .handsontable.ht-theme-main .area{background-color:#00bf8f33}
+  </style>
+</head>
+<body>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=902194145304994&ev=PageView&noscript=1" /></noscript>
+  <header>
+    <div class="brand"><span class="dot"></span> Automatiza</div>
+    <div class="buttons">
+      <button id="seed">Resetar dados</button>
+      <button id="runMacro" class="primary">Executar Macro</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="panel">
+      <div class="card hint">
+        <b>Objetivo</b>: simular uma macro aplicando alterações na tabela: inserir item, dar <i>desconto</i> onde Qtd ≥ 5, e recalcular <b>Subtotal</b>.<br/>
+        Fórmulas em <code>Total</code> usam HyperFormula.
+      </div>
+      <div class="card" style="flex:1;min-width:260px">
+        <b>Log</b>
+        <div id="log" class="log"></div>
+      </div>
+    </div>
+    <div class="sheet-scroll">
+      <div id="hot" class="ht-theme-main"></div>
+    </div>
+  </main>
+
+  <!-- JS (HOT + HyperFormula via CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/handsontable@16.1.1/dist/handsontable.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hyperformula@3.0.1/dist/hyperformula.full.min.js"></script>
+
+  <script>
+    // Helpers
+    const $ = sel => document.querySelector(sel);
+    const log = (msg) => {
+      const ts = new Date().toLocaleTimeString();
+      $('#log').textContent = `[${ts}] ${msg}\n` + $('#log').textContent;
+    };
+
+    // Dados iniciais (mais linhas)
+    function initialData() {
+      const items = [
+        ['Item A', 2, 10],
+        ['Item B', 5, 20],
+        ['Item C', 3, 15],
+        ['Item D', 1, 40],
+        ['Item E', 6, 8],
+        ['Item F', 4, 12],
+        ['Item G', 9, 22],
+        ['Item H', 7, 18],
+        ['Item I', 2, 25],
+        ['Item J', 10, 7],
+        ['Item K', 5, 30],
+        ['Item L', 8, 16],
+      ];
+      return items.map((it, idx) => [it[0], it[1], it[2], `=B${idx+1}*C${idx+1}`]);
+    }
+
+    // Cria a HOT
+    const hot = new Handsontable($('#hot'), {
+      data: initialData(),
+      colHeaders: ['Produto','Qtd','Preço','Total'],
+      rowHeaders: true,
+      columns: [
+        {data:0, type:'text'},
+        {data:1, type:'numeric'},
+        {data:2, type:'numeric'},
+        // Deixe a fórmula ser tratada pelo plugin "formulas". Exibimos o resultado e bloqueamos edição direta.
+        {data:3, type:'numeric', readOnly: true},
+      ],
+      stretchH: 'all',
+      height: 420,
+      minSpareRows: 3,
+      filters: true,
+      dropdownMenu: true,
+      contextMenu: true,
+      licenseKey: 'non-commercial-and-evaluation',
+      formulas: { engine: HyperFormula },
+      afterChange(changes, src){
+        if(!changes || src==='loadData') return;
+        // Se o usuário alterar Qtd ou Preço, reescreve a fórmula da coluna Total dessa linha
+        changes.forEach(([r, prop, oldV, newV]) => {
+          if([1,2,'1','2'].includes(prop)){ // col 1: Qtd, col 2: Preço
+            hot.setDataAtCell(r, 3, `=B${r+1}*C${r+1}`, 'auto-total');
+          }
+        });
+      }
+    });
+
+    function lastDataRowIndex(){
+      // procura da última linha que possui algum dado (ignora linhas "spare")
+      for(let r = hot.countRows()-1; r >= 0; r--){
+        const row = hot.getDataAtRow(r);
+        if(row && row.some(v => v !== null && v !== undefined && String(v).trim() !== '')){
+          return r;
+        }
+      }
+      return -1;
+    }
+
+    function rowForAppend(){
+      // próxima linha imediatamente após a última linha com dados
+      const idx = lastDataRowIndex();
+      const next = idx + 1;
+      // se "next" já existe (é uma spare), basta usar; senão, garante a existência
+      if(next >= hot.countRows()){
+        hot.alter('insert_row_above', hot.countRows());
+      }
+      return next;
+    }
+
+    function removeLastSubtotalIfAny(){
+      // remove o "Subtotal" mais próximo do final do bloco de dados
+      for(let r = hot.countRows()-1; r >= 0; r--){
+        const row = hot.getDataAtRow(r);
+        const isData = row && row.some(v => v !== null && v !== undefined && String(v).trim() !== '');
+        if(hot.getDataAtCell(r,0) === 'Subtotal'){
+          hot.alter('remove_row', r, 1);
+          return;
+        }
+        if(isData) break; // parou na última linha de dados
+      }
+    }
+
+    // A "macro" de exemplo
+    function runMacro(){
+      hot.batch(() => {
+        // 1) Remover Subtotal anterior (se existir próximo ao fim dos dados)
+        removeLastSubtotalIfAny();
+
+        // 2) Inserir/usar a primeira linha livre imediatamente após os dados
+        const r = rowForAppend();
+        hot.setDataAtCell(r, 0, 'Item C', 'macro');
+        hot.setDataAtCell(r, 1, 3, 'macro');
+        hot.setDataAtCell(r, 2, 15, 'macro');
+        hot.setDataAtCell(r, 3, `=B${r+1}*C${r+1}`, 'macro');
+
+        // 3) Desconto de 10% em Preço quando Qtd ≥ 5
+        const end = lastDataRowIndex();
+        for(let i=0;i<=end;i++){
+          const qtd = hot.getDataAtCell(i,1);
+          const preco = hot.getDataAtCell(i,2);
+          if(typeof qtd === 'number' && qtd >= 5 && typeof preco === 'number'){
+            const novo = Math.round(preco * 0.9 * 100) / 100;
+            hot.setDataAtCell(i,2, novo, 'macro');
+            const prev = (hot.getCellMeta(i,2).className||'');
+            hot.setCellMeta(i,2,'className', (prev+' htDimmed').trim());
+          }
+        }
+
+        // 4) Adicionar Subtotal logo após os dados
+        const subtotalRow = rowForAppend();
+        hot.setDataAtCell(subtotalRow, 0, 'Subtotal', 'macro');
+        hot.setDataAtCell(subtotalRow, 3, `=SUM(D1:D${subtotalRow})`, 'macro');
+        for(let c=0;c<hot.countCols();c++){
+          const prev = (hot.getCellMeta(subtotalRow,c).className||'');
+          hot.setCellMeta(subtotalRow,c,'className', (prev+' subtotal-row').trim());
+        }
+      });
+      hot.render();
+      log('Macro executada: inseriu Item C logo após os dados, aplicou desconto (Qtd ≥ 5) e criou Subtotal.');
+    }
+
+    $('#runMacro').addEventListener('click', runMacro);
+
+    // Reset melhorado: limpa estilos, recoloca dados, reseta seleção, zera o log e rola pro topo
+    $('#seed').addEventListener('click', () => {
+      hot.batch(() => {
+        hot.loadData(initialData());
+        for (let r=0; r<hot.countRows(); r++) {
+          for (let c=0; c<hot.countCols(); c++) {
+            hot.setCellMeta(r,c,'className', '');
+          }
+        }
+      });
+      $('#log').textContent = '';
+      hot.selectCell(0,0);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      log('Dados reiniciados.');
+    });
+
+    // Smoke test inicial
+    log('Pronto. Edite as células; clique "Executar Macro". A coluna Total usa fórmulas (=B*C).');
+  </script>
+
+  <style>
+    /* Footer CTA – estilo alinhado ao tema neon roxo/ciano (glass) */
+    .auto-cta-footer { background:#0b1b2d; color:#ffffff; border-top:1px solid #232336; position:fixed; left:0; right:0; bottom:0; z-index:9999; box-shadow: 0 -6px 18px rgba(0,0,0,.25); }
+    .auto-cta-footer .inner { max-width: 1200px; margin:0 auto; padding: 18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+    .auto-cta-footer .brand { font-weight:700; letter-spacing:.2px; color:#00eaff; }
+    .auto-cta-footer .msg { opacity:.9; }
+    .auto-cta-footer .actions { display:flex; gap:10px; align-items:center; }
+    .auto-cta-footer .btn-buy {
+      color:#ffffff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800;
+      background: linear-gradient(180deg, rgba(155,92,255,.18), rgba(155,92,255,.10));
+      border:1px solid rgba(155,92,255,.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 8px 24px rgba(155,92,255,.25);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .auto-cta-footer .btn-buy:hover { background: linear-gradient(180deg, rgba(155,92,255,.26), rgba(155,92,255,.14)); }
+    .auto-cta-footer .btn-back {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      color: #00eaff; padding:10px 16px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid rgba(0,234,255,.45);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(0,234,255,.16);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .auto-cta-footer .btn-back:hover { background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05)); }
+    @media (max-width: 560px){
+      /* Mantém os botões do footer lado a lado no mobile */
+      .auto-cta-footer .inner{ flex-direction:column; align-items:stretch; }
+      .auto-cta-footer .actions{ width:100%; flex-direction:row; justify-content:space-between; }
+      .auto-cta-footer .actions a{ flex:1 1 0; text-align:center; }
+    }
+    /* Ajustes extras para reduzir altura no mobile ~20% */
+    @media (max-width: 560px){
+      .auto-cta-footer .inner { padding: 10px 14px; }
+      .auto-cta-footer .actions { gap: 8px; }
+      .auto-cta-footer .btn-buy, .auto-cta-footer .btn-back { padding: 7px 12px; }
+    }
+  </style>
+  <div class="auto-cta-footer" role="contentinfo" aria-label="Automatiza CTA">
+    <div class="inner">
+      <div>
+        <div class="brand">Automatiza</div>
+        <div class="msg">Pronto para levar essa planilha para produção?</div>
+      </div>
+      <div class="actions">
+        <a class="btn-back" href="#" onclick="event.preventDefault(); if (history.length > 1) history.back(); else window.location.href='../index.html';">Voltar</a>
+        <a class="btn-buy" href="https://wa.me/5534998878515?text=Quero%20comprar%20agora%20(Automatiza)" target="_blank" rel="noopener">EU QUERO!</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // Evita sobreposição do footer fixo: ajusta o padding-bottom dinamicamente
+  (function(){
+    const adjust = () => {
+      const f = document.querySelector('.auto-cta-footer');
+      if(!f) return;
+      const h = f.offsetHeight || 0;
+      document.body.style.paddingBottom = (h + 24) + 'px';
+    };
+    window.addEventListener('load', adjust, { once: true });
+    window.addEventListener('resize', adjust);
+    const f = document.querySelector('.auto-cta-footer');
+    if (window.ResizeObserver && f) {
+      new ResizeObserver(adjust).observe(f);
+    }
+  })();
+</script>
+
+</body>
+</html>
